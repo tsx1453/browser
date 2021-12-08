@@ -1,4 +1,4 @@
-apply plugin: 'com.android.application'
+apply plugin: 'com.android.library'
 
 android {
     compileSdkVersion 31
@@ -10,11 +10,8 @@ android {
     }
 
     defaultConfig {
-        applicationId "de.baumann.browser"
-        minSdkVersion 24
-        targetSdkVersion 31
-        versionCode 123
-        versionName "8.5.2"
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
         multiDexEnabled true
         vectorDrawables.useSupportLibrary = true
     }

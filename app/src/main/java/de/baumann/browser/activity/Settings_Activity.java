@@ -66,15 +66,15 @@ public class Settings_Activity extends AppCompatActivity {
         if (menuItem.getItemId() == android.R.id.home) {
             finish();
         } else if (menuItem.getItemId() == R.id.menu_info) {
-            SpannableString s= new SpannableString(Html.fromHtml(getString(R.string.changelog_dialog),Html.FROM_HTML_MODE_LEGACY));
-            Linkify.addLinks(s, Linkify.WEB_URLS);
-            MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
-            builder.setTitle(getString(R.string.menu_other_info)+"\t V"+ BuildConfig.VERSION_NAME);
-            builder.setMessage(s);
-            AlertDialog dialog = builder.create();
-            dialog.show();
-            ((TextView) Objects.requireNonNull(dialog.findViewById(android.R.id.message))).setMovementMethod(LinkMovementMethod.getInstance());
-            Objects.requireNonNull(dialog.getWindow()).setGravity(Gravity.BOTTOM);
+//            SpannableString s= new SpannableString(Html.fromHtml(getString(R.string.changelog_dialog),Html.FROM_HTML_MODE_LEGACY));
+//            Linkify.addLinks(s, Linkify.WEB_URLS);
+//            MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
+//            builder.setTitle(getString(R.string.menu_other_info)+"\t V"+ BuildConfig.VERSION_NAME);
+//            builder.setMessage(s);
+//            AlertDialog dialog = builder.create();
+//            dialog.show();
+//            ((TextView) Objects.requireNonNull(dialog.findViewById(android.R.id.message))).setMovementMethod(LinkMovementMethod.getInstance());
+//            Objects.requireNonNull(dialog.getWindow()).setGravity(Gravity.BOTTOM);
         }
         return true;
     }

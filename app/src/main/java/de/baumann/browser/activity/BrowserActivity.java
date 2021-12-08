@@ -549,7 +549,6 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
         sp.edit().putBoolean("pdf_create", true).apply();
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.M)
     private void dispatchIntent(Intent intent) {
         String action = intent.getAction();
         String url = intent.getStringExtra(Intent.EXTRA_TEXT);
