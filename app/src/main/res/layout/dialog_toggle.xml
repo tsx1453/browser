@@ -446,12 +446,12 @@
                 android:text="@string/menu_desktopView"
                 android:maxLines="1" />
 
-            <Button
-                android:id="@+id/ib_settings"
-                style="@style/Widget.Material3.Button.IconButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:icon="@drawable/icon_settings"/>
+<!--            <Button-->
+<!--                android:id="@+id/ib_settings"-->
+<!--                style="@style/Widget.Material3.Button.IconButton"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                app:icon="@drawable/icon_settings"/>-->
 
             <Button
                 android:id="@+id/ib_reload"

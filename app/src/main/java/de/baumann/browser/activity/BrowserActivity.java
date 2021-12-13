@@ -1,12 +1,19 @@
 package de.baumann.browser.activity;
 
+import static android.content.ContentValues.TAG;
+import static android.webkit.WebView.HitTestResult.IMAGE_TYPE;
+import static android.webkit.WebView.HitTestResult.SRC_ANCHOR_TYPE;
+import static android.webkit.WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE;
+import static de.baumann.browser.database.RecordAction.BOOKMARK_ITEM;
+import static de.baumann.browser.database.RecordAction.HISTORY_ITEM;
+import static de.baumann.browser.database.RecordAction.STARTSITE_ITEM;
+
 import android.Manifest;
 import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.DownloadManager;
-
 import android.app.SearchManager;
 import android.content.BroadcastReceiver;
 import android.content.ClipData;
@@ -23,41 +30,12 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-
-import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatDelegate;
-import androidx.appcompat.widget.PopupMenu;
-import androidx.cardview.widget.CardView;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.preference.PreferenceManager;
-
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Message;
 import android.print.PrintAttributes;
 import android.print.PrintDocumentAdapter;
 import android.print.PrintManager;
-
-import androidx.annotation.NonNull;
-
-import com.google.android.material.badge.BadgeDrawable;
-import com.google.android.material.badge.BadgeUtils;
-import com.google.android.material.bottomappbar.BottomAppBar;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.android.material.bottomsheet.BottomSheetBehavior;
-import com.google.android.material.bottomsheet.BottomSheetDialog;
-import com.google.android.material.chip.Chip;
-import com.google.android.material.color.DynamicColors;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.android.material.navigation.NavigationBarView;
-import com.google.android.material.progressindicator.CircularProgressIndicator;
-import com.google.android.material.tabs.TabLayout;
-import com.google.android.material.textfield.TextInputLayout;
-
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -81,6 +59,7 @@ import android.webkit.WebBackForwardList;
 import android.webkit.WebChromeClient;
 import android.webkit.WebStorage;
 import android.webkit.WebView;
+import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
@@ -92,55 +71,67 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 import android.widget.VideoView;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
+import androidx.appcompat.widget.PopupMenu;
+import androidx.cardview.widget.CardView;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.preference.PreferenceManager;
+
+import com.google.android.material.badge.BadgeDrawable;
+import com.google.android.material.badge.BadgeUtils;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.color.DynamicColors;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.navigation.NavigationBarView;
+import com.google.android.material.progressindicator.LinearProgressIndicator;
+import com.google.android.material.tabs.TabLayout;
+import com.google.android.material.textfield.TextInputLayout;
+import com.liuzho.lib.baseutils.ScreenUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
 
+import de.baumann.browser.R;
 import de.baumann.browser.browser.AdBlock;
 import de.baumann.browser.browser.AlbumController;
 import de.baumann.browser.browser.BrowserContainer;
 import de.baumann.browser.browser.BrowserController;
+import de.baumann.browser.browser.DataURIParser;
 import de.baumann.browser.browser.List_protected;
 import de.baumann.browser.browser.List_standard;
-import de.baumann.browser.browser.DataURIParser;
 import de.baumann.browser.browser.List_trusted;
 import de.baumann.browser.database.FaviconHelper;
 import de.baumann.browser.database.Record;
 import de.baumann.browser.database.RecordAction;
-import de.baumann.browser.R;
 import de.baumann.browser.storage.SP;
 import de.baumann.browser.unit.BrowserUnit;
 import de.baumann.browser.unit.HelperUnit;
 import de.baumann.browser.unit.RecordUnit;
 import de.baumann.browser.view.CompleteAdapter;
 import de.baumann.browser.view.GridAdapter;
-
 import de.baumann.browser.view.GridItem;
 import de.baumann.browser.view.NinjaToast;
 import de.baumann.browser.view.NinjaWebView;
 import de.baumann.browser.view.RecordAdapter;
 import de.baumann.browser.view.SwipeTouchListener;
 
-import static android.content.ContentValues.TAG;
-import static android.webkit.WebView.HitTestResult.IMAGE_TYPE;
-import static android.webkit.WebView.HitTestResult.SRC_ANCHOR_TYPE;
-import static android.webkit.WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE;
-import static de.baumann.browser.database.RecordAction.BOOKMARK_ITEM;
-import static de.baumann.browser.database.RecordAction.HISTORY_ITEM;
-import static de.baumann.browser.database.RecordAction.STARTSITE_ITEM;
-
 public class BrowserActivity extends AppCompatActivity implements BrowserController {
 
     // Menus
 
     private RecordAdapter adapter;
-    private RelativeLayout omniBox;
     private ImageButton omniBox_overview;
     private AutoCompleteTextView omniBox_text;
 
@@ -152,10 +143,10 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
     private NinjaWebView ninjaWebView;
     private View customView;
     private VideoView videoView;
-    private ImageButton omniBox_tab;
+    private ImageButton omniBox_flavor;
     private KeyListener listener;
     private BadgeDrawable badgeDrawable;
-    private CircularProgressIndicator progressBar;
+    private LinearProgressIndicator progressBar;
 
     // Layouts
 
@@ -168,7 +159,6 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
 
     private int mLastContentHeight = 0;
     private BottomNavigationView bottom_navigation;
-    private BottomAppBar bottomAppBar;
 
     private String overViewTab;
     private BroadcastReceiver downloadReceiver;
@@ -209,14 +199,24 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
     }
 
     private final ViewTreeObserver.OnGlobalLayoutListener keyboardLayoutListener = new ViewTreeObserver.OnGlobalLayoutListener() {
+        private void updateSearchLayoutOnKeyboardChange(boolean keyboardShow) {
+//            if (searchPanel != null && searchPanel.getVisibility() == View.VISIBLE) {
+//                if (searchPanel.getLayoutParams() instanceof ViewGroup.MarginLayoutParams) {
+//                    ((ViewGroup.MarginLayoutParams) searchPanel.getLayoutParams()).setMargins(0, 0, 0, keyboardShow ? mLastContentHeight : 0);
+//                }
+//            }
+        }
+
         @Override
         public void onGlobalLayout() {
             int currentContentHeight = findViewById(Window.ID_ANDROID_CONTENT).getHeight();
             if (mLastContentHeight > currentContentHeight + 100) {
                 mLastContentHeight = currentContentHeight;
+                updateSearchLayoutOnKeyboardChange(true);
             } else if (currentContentHeight > mLastContentHeight + 100) {
                 mLastContentHeight = currentContentHeight;
                 omniBox_text.clearFocus();
+                updateSearchLayoutOnKeyboardChange(false);
             }
         }
     };
@@ -232,17 +232,24 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+            @Override
+            public void uncaughtException(@NonNull Thread thread, @NonNull Throwable throwable) {
+                throwable.printStackTrace();
+                finish();
+            }
+        });
         super.onCreate(savedInstanceState);
-        SP.init(this);
         activity = BrowserActivity.this;
         context = BrowserActivity.this;
         sp = PreferenceManager.getDefaultSharedPreferences(context);
 
         if (getSupportActionBar() != null) getSupportActionBar().hide();
         Window window = this.getWindow();
-        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-        window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-        window.setStatusBarColor(ContextCompat.getColor(this, R.color.md_theme_light_onBackground));
+//        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+        ScreenUtils.translucent(this);
+        window.getDecorView().setSystemUiVisibility(window.getDecorView().getSystemUiVisibility() | View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+//        window.setStatusBarColor(ContextCompat.getColor(this, R.color.md_theme_light_onBackground));
         if (sp.getBoolean("sp_screenOn", false))
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
@@ -326,11 +333,10 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
         initOmniBox();
         initTabDialog();
         initSearchPanel();
-        initOverview();
-        if (sp.getBoolean("start_tabStart", false)) {
-            //put showOverview first. May be closed again later depending on intent
-            showOverview();
-        }
+//        if (sp.getBoolean("start_tabStart", false)) {
+//            //put showOverview first. May be closed again later depending on intent
+//            showOverview();
+//        }
         dispatchIntent(getIntent());
 
         //restore open Tabs from shared preferences if app got killed
@@ -458,10 +464,7 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
                 if (fullscreenHolder != null || customView != null || videoView != null) {
                     Log.v(TAG, "FOSS Browser in fullscreen mode");
                 } else if (searchPanel.getVisibility() == View.VISIBLE) {
-                    searchOnSite = false;
-                    searchBox.setText("");
-                    searchPanel.setVisibility(View.GONE);
-                    omniBox.setVisibility(View.VISIBLE);
+                    stopSearchOnSite();
                 } else if (ninjaWebView.canGoBack()) {
                     WebBackForwardList mWebBackForwardList = ninjaWebView.copyBackForwardList();
                     String historyUrl = mWebBackForwardList.getItemAtIndex(mWebBackForwardList.getCurrentIndex() - 1).getUrl();
@@ -477,11 +480,11 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
 
     @Override
     public synchronized void showAlbum(AlbumController controller) {
-        if (sp.getBoolean("hideToolbar", true)) {
-            ObjectAnimator animation = ObjectAnimator.ofFloat(bottomAppBar, "translationY", 0);
-            animation.setDuration(getResources().getInteger(android.R.integer.config_shortAnimTime));
-            animation.start();
-        }
+//        if (sp.getBoolean("hideToolbar", true)) {
+//            ObjectAnimator animation = ObjectAnimator.ofFloat(bottomAppBar, "translationY", 0);
+//            animation.setDuration(getResources().getInteger(android.R.integer.config_shortAnimTime));
+//            animation.start();
+//        }
         View av = (View) controller;
         if (currentAlbumController != null) {
             currentAlbumController.deactivate();
@@ -492,10 +495,7 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
         contentFrame.addView(av);
         updateOmniBox();
         if (searchPanel.getVisibility() == View.VISIBLE) {
-            searchOnSite = false;
-            searchBox.setText("");
-            searchPanel.setVisibility(View.GONE);
-            omniBox.setVisibility(View.VISIBLE);
+            stopSearchOnSite();
         }
     }
 
@@ -526,8 +526,18 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
         });
     }
 
-    private void showOverview() {
-        initOverview();
+//    private void showOverview() {
+//        initOverview();
+//        bottomSheetDialog_OverView.show();
+//    }
+
+    private void showBookmarkOverview() {
+        initOverview(true);
+        bottomSheetDialog_OverView.show();
+    }
+
+    private void showHistoryOverview() {
+        initOverview(false);
         bottomSheetDialog_OverView.show();
     }
 
@@ -593,23 +603,21 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
         tab_container = dialog_tabPreview_view.findViewById(R.id.tab_container);
         builder.setView(dialog_tabPreview_view);
         dialog_tabPreview = builder.create();
-        Objects.requireNonNull(dialog_tabPreview.getWindow()).setGravity(Gravity.BOTTOM);
+        Objects.requireNonNull(dialog_tabPreview.getWindow()).setGravity(Gravity.TOP);
     }
 
     @SuppressLint({"ClickableViewAccessibility", "UnsafeExperimentalUsageError", "UnsafeOptInUsageError"})
     private void initOmniBox() {
-
-        omniBox = findViewById(R.id.omniBox);
         omniBox_text = findViewById(R.id.omniBox_input);
         listener = omniBox_text.getKeyListener(); // Save the default KeyListener!!!
         omniBox_text.setKeyListener(null); // Disable input
         omniBox_text.setEllipsize(TextUtils.TruncateAt.END);
-        omniBox_tab = findViewById(R.id.omniBox_tab);
-        omniBox_tab.setOnClickListener(v -> showTabView());
+        omniBox_flavor = findViewById(R.id.omniBox_flavor);
+//        omniBox_flavor.setOnClickListener(v -> showTabView());
+        omniBox_flavor.setOnClickListener(v -> show_dialogFastToggle());
         omniBox_overview = findViewById(R.id.omnibox_overview);
 
         progressBar = findViewById(R.id.main_progress_bar);
-        bottomAppBar = findViewById(R.id.bottomAppBar);
 
         TypedValue typedValue = new TypedValue();
         Resources.Theme theme = context.getTheme();
@@ -620,7 +628,7 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
         badgeDrawable.setBadgeGravity(BadgeDrawable.TOP_END);
         badgeDrawable.setNumber(BrowserContainer.size());
         badgeDrawable.setBackgroundColor(color);
-        BadgeUtils.attachBadgeDrawable(badgeDrawable, omniBox_tab, findViewById(R.id.layout));
+        BadgeUtils.attachBadgeDrawable(badgeDrawable, omniBox_overview, findViewById(R.id.layout));
 
         ImageButton omnibox_overflow = findViewById(R.id.omnibox_overflow);
         omnibox_overflow.setOnClickListener(v -> showOverflow());
@@ -662,7 +670,7 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
                 performGesture("setting_gesture_nav_left");
             }
         });
-        omniBox_tab.setOnTouchListener(new SwipeTouchListener(context) {
+        omniBox_flavor.setOnTouchListener(new SwipeTouchListener(context) {
             public void onSwipeTop() {
                 performGesture("setting_gesture_nav_up");
             }
@@ -728,13 +736,14 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
                 updateOmniBox();
             }
         });
-        omniBox_overview.setOnClickListener(v -> showOverview());
-        omniBox_overview.setOnLongClickListener(v -> {
-            bottom_navigation.setSelectedItemId(R.id.page_2);
-            showOverview();
-            show_dialogFilter();
-            return false;
-        });
+//        omniBox_overview.setOnClickListener(v -> showOverview());
+        omniBox_overview.setOnClickListener(v -> showTabView());
+//        omniBox_overview.setOnLongClickListener(v -> {
+//            bottom_navigation.setSelectedItemId(R.id.page_2);
+//            showOverview();
+//            show_dialogFilter();
+//            return false;
+//        });
     }
 
     private void performGesture(String gesture) {
@@ -776,9 +785,9 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
                 //currentAlbumController = nextAlbumController(true);
                 showAlbum(nextAlbumController(true));
                 break;
-            case "08":
-                showOverview();
-                break;
+//            case "08":
+//                showOverview();
+//                break;
             case "09":
                 addAlbum(getString(R.string.app_name), SP.getInstance().getFavoriteUrl(), true, false, "");
                 break;
@@ -810,9 +819,14 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
     }
 
     @SuppressLint("ClickableViewAccessibility")
-    private void initOverview() {
+    private void initOverview(boolean bookMark) {
         bottomSheetDialog_OverView = new BottomSheetDialog(context);
         View dialogView = View.inflate(context, R.layout.dialog_overview, null);
+        TextView title = dialogView.findViewById(R.id.overview_title);
+        ImageButton close = dialogView.findViewById(R.id.overview_close);
+
+        close.setOnClickListener(view -> hideOverview());
+
         ListView listView = dialogView.findViewById(R.id.list_overView);
         // allow scrolling in listView without closing the bottomSheetDialog
         listView.setOnTouchListener((v, event) -> {
@@ -830,190 +844,82 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
 
         bottomSheetDialog_OverView.setContentView(dialogView);
 
-        NavigationBarView.OnItemSelectedListener navListener = menuItem -> {
-            if (menuItem.getItemId() == R.id.page_1) {
-                omniBox_overview.setImageResource(R.drawable.icon_web);
-                overViewTab = getString(R.string.album_title_home);
+        if (bookMark) {
+            overViewTab = getString(R.string.album_title_bookmarks);
 
-                RecordAction action = new RecordAction(context);
-                action.open(false);
-                final List<Record> list = action.listStartSite(activity);
-                action.close();
+            RecordAction action = new RecordAction(context);
+            action.open(false);
+            final List<Record> list;
+            list = action.listBookmark(activity, filter, filterBy);
+            action.close();
 
-                adapter = new RecordAdapter(context, list);
-                listView.setAdapter(adapter);
-                adapter.notifyDataSetChanged();
-
-                listView.setOnItemClickListener((parent, view, position, id) -> {
-                    if (list.get(position).getDesktopMode() != ninjaWebView.isDesktopMode())
-                        ninjaWebView.toggleDesktopMode(false);
-                    if (list.get(position).getNightMode() == ninjaWebView.isNightMode() && !isNightMode) {
-                        ninjaWebView.toggleNightMode();
-                        isNightMode = ninjaWebView.isNightMode();
-                    }
-                    ninjaWebView.loadUrl(list.get(position).getURL());
-                    hideOverview();
-                });
-
-                listView.setOnItemLongClickListener((parent, view, position, id) -> {
-                    showContextMenuList(list.get(position).getTitle(), list.get(position).getURL(), adapter, list, position);
-                    return true;
-                });
-            } else if (menuItem.getItemId() == R.id.page_2) {
-                omniBox_overview.setImageResource(R.drawable.icon_bookmark);
-                overViewTab = getString(R.string.album_title_bookmarks);
-
-                RecordAction action = new RecordAction(context);
-                action.open(false);
-                final List<Record> list;
-                list = action.listBookmark(activity, filter, filterBy);
-                action.close();
-
-                adapter = new RecordAdapter(context, list) {
-                    @SuppressWarnings("NullableProblems")
-                    @Override
-                    public View getView(int position, View convertView, @NonNull ViewGroup parent) {
-                        View v = super.getView(position, convertView, parent);
-                        ImageView record_item_icon = v.findViewById(R.id.record_item_icon);
-                        record_item_icon.setVisibility(View.VISIBLE);
-                        return v;
-                    }
-                };
-
-                listView.setAdapter(adapter);
-                adapter.notifyDataSetChanged();
-                filter = false;
-                listView.setOnItemClickListener((parent, view, position, id) -> {
-                    if (list.get(position).getDesktopMode() != ninjaWebView.isDesktopMode())
-                        ninjaWebView.toggleDesktopMode(false);
-                    if (list.get(position).getNightMode() == ninjaWebView.isNightMode() && !isNightMode) {
-                        ninjaWebView.toggleNightMode();
-                        isNightMode = ninjaWebView.isNightMode();
-                    }
-                    ninjaWebView.loadUrl(list.get(position).getURL());
-                    hideOverview();
-                });
-                listView.setOnItemLongClickListener((parent, view, position, id) -> {
-                    showContextMenuList(list.get(position).getTitle(), list.get(position).getURL(), adapter, list, position);
-                    return true;
-                });
-            } else if (menuItem.getItemId() == R.id.page_3) {
-                omniBox_overview.setImageResource(R.drawable.icon_history);
-                overViewTab = getString(R.string.album_title_history);
-
-                RecordAction action = new RecordAction(context);
-                action.open(false);
-                final List<Record> list;
-                list = action.listHistory();
-                action.close();
-
-                //noinspection NullableProblems
-                adapter = new RecordAdapter(context, list) {
-                    @Override
-                    public View getView(int position, View convertView, @NonNull ViewGroup parent) {
-                        View v = super.getView(position, convertView, parent);
-                        TextView record_item_time = v.findViewById(R.id.record_item_time);
-                        record_item_time.setVisibility(View.VISIBLE);
-                        return v;
-                    }
-                };
-
-                listView.setAdapter(adapter);
-                adapter.notifyDataSetChanged();
-                listView.setOnItemClickListener((parent, view, position, id) -> {
-                    if (list.get(position).getDesktopMode() != ninjaWebView.isDesktopMode())
-                        ninjaWebView.toggleDesktopMode(false);
-                    if (list.get(position).getNightMode() == ninjaWebView.isNightMode() && !isNightMode) {
-                        ninjaWebView.toggleNightMode();
-                        isNightMode = ninjaWebView.isNightMode();
-                    }
-                    ninjaWebView.loadUrl(list.get(position).getURL());
-                    hideOverview();
-                });
-
-                listView.setOnItemLongClickListener((parent, view, position, id) -> {
-                    showContextMenuList(list.get(position).getTitle(), list.get(position).getURL(), adapter, list, position);
-                    return true;
-                });
-            } else if (menuItem.getItemId() == R.id.page_4) {
-                PopupMenu popup = new PopupMenu(this, bottom_navigation.findViewById(R.id.page_2));
-                if (overViewTab.equals(getString(R.string.album_title_home))) {
-                    popup.inflate(R.menu.menu_list_start);
-                } else if (overViewTab.equals(getString(R.string.album_title_bookmarks))) {
-                    popup.inflate(R.menu.menu_list_bookmark);
-                } else {
-                    popup.inflate(R.menu.menu_list_history);
+            adapter = new RecordAdapter(context, list) {
+                @SuppressWarnings("NullableProblems")
+                @Override
+                public View getView(int position, View convertView, @NonNull ViewGroup parent) {
+                    View v = super.getView(position, convertView, parent);
+                    ImageView record_item_icon = v.findViewById(R.id.record_item_icon);
+                    record_item_icon.setVisibility(View.VISIBLE);
+                    return v;
                 }
-                popup.setOnMenuItemClickListener(item -> {
-                    if (item.getItemId() == R.id.menu_delete) {
-                        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
-                        builder.setIcon(R.drawable.icon_alert);
-                        builder.setTitle(R.string.menu_delete);
-                        builder.setMessage(R.string.hint_database);
-                        builder.setPositiveButton(R.string.app_ok, (dialog, whichButton) -> {
-                            if (overViewTab.equals(getString(R.string.album_title_home))) {
-                                BrowserUnit.clearHome(context);
-                                bottom_navigation.setSelectedItemId(R.id.page_1);
-                            } else if (overViewTab.equals(getString(R.string.album_title_bookmarks))) {
-                                BrowserUnit.clearBookmark(context);
-                                bottom_navigation.setSelectedItemId(R.id.page_2);
-                            } else if (overViewTab.equals(getString(R.string.album_title_history))) {
-                                BrowserUnit.clearHistory(context);
-                                bottom_navigation.setSelectedItemId(R.id.page_3);
-                            }
-                        });
-                        builder.setNegativeButton(R.string.app_cancel, (dialog, whichButton) -> dialog.cancel());
-                        AlertDialog dialog = builder.create();
-                        dialog.show();
-                        HelperUnit.setupDialog(context, dialog);
-                    } else if (item.getItemId() == R.id.menu_sortName) {
-                        if (overViewTab.equals(getString(R.string.album_title_bookmarks))) {
-                            sp.edit().putString("sort_bookmark", "title").apply();
-                            bottom_navigation.setSelectedItemId(R.id.page_2);
-                        } else if (overViewTab.equals(getString(R.string.album_title_home))) {
-                            sp.edit().putString("sort_startSite", "title").apply();
-                            bottom_navigation.setSelectedItemId(R.id.page_1);
-                        }
-                    } else if (item.getItemId() == R.id.menu_sortIcon) {
-                        sp.edit().putString("sort_bookmark", "time").apply();
-                        bottom_navigation.setSelectedItemId(R.id.page_2);
-                    } else if (item.getItemId() == R.id.menu_sortDate) {
-                        sp.edit().putString("sort_startSite", "ordinal").apply();
-                        bottom_navigation.setSelectedItemId(R.id.page_1);
-                    } else if (item.getItemId() == R.id.menu_filter) {
-                        show_dialogFilter();
-                    }
-                    return true;
-                });
-                popup.show();
-                popup.setOnDismissListener(v -> {
-                    if (overViewTab.equals(getString(R.string.album_title_home))) {
-                        bottom_navigation.setSelectedItemId(R.id.page_1);
-                    } else if (overViewTab.equals(getString(R.string.album_title_bookmarks))) {
-                        bottom_navigation.setSelectedItemId(R.id.page_2);
-                    } else if (overViewTab.equals(getString(R.string.album_title_history))) {
-                        bottom_navigation.setSelectedItemId(R.id.page_3);
-                    }
-                });
-            }
-            return true;
-        };
+            };
 
-        bottom_navigation = dialogView.findViewById(R.id.bottom_navigation);
-        bottom_navigation.setOnItemSelectedListener(navListener);
-        bottom_navigation.findViewById(R.id.page_2).setOnLongClickListener(v -> {
-            show_dialogFilter();
-            return true;
-        });
+            listView.setAdapter(adapter);
+            adapter.notifyDataSetChanged();
+            filter = false;
+            listView.setOnItemClickListener((parent, view, position, id) -> {
+                if (list.get(position).getDesktopMode() != ninjaWebView.isDesktopMode())
+                    ninjaWebView.toggleDesktopMode(false);
+                if (list.get(position).getNightMode() == ninjaWebView.isNightMode() && !isNightMode) {
+                    ninjaWebView.toggleNightMode();
+                    isNightMode = ninjaWebView.isNightMode();
+                }
+                ninjaWebView.loadUrl(list.get(position).getURL());
+                hideOverview();
+            });
+            listView.setOnItemLongClickListener((parent, view, position, id) -> {
+                showContextMenuList(list.get(position).getTitle(), list.get(position).getURL(), adapter, list, position);
+                return true;
+            });
+        } else {
+            overViewTab = getString(R.string.album_title_history);
 
-        if (overViewTab.equals(getString(R.string.album_title_home))) {
-            bottom_navigation.setSelectedItemId(R.id.page_1);
-        } else if (overViewTab.equals(getString(R.string.album_title_bookmarks))) {
-            bottom_navigation.setSelectedItemId(R.id.page_2);
-        } else if (overViewTab.equals(getString(R.string.album_title_history))) {
-            bottom_navigation.setSelectedItemId(R.id.page_3);
+            RecordAction action = new RecordAction(context);
+            action.open(false);
+            final List<Record> list;
+            list = action.listHistory();
+            action.close();
+
+            //noinspection NullableProblems
+            adapter = new RecordAdapter(context, list) {
+                @Override
+                public View getView(int position, View convertView, @NonNull ViewGroup parent) {
+                    View v = super.getView(position, convertView, parent);
+                    TextView record_item_time = v.findViewById(R.id.record_item_time);
+                    record_item_time.setVisibility(View.VISIBLE);
+                    return v;
+                }
+            };
+
+            listView.setAdapter(adapter);
+            adapter.notifyDataSetChanged();
+            listView.setOnItemClickListener((parent, view, position, id) -> {
+                if (list.get(position).getDesktopMode() != ninjaWebView.isDesktopMode())
+                    ninjaWebView.toggleDesktopMode(false);
+                if (list.get(position).getNightMode() == ninjaWebView.isNightMode() && !isNightMode) {
+                    ninjaWebView.toggleNightMode();
+                    isNightMode = ninjaWebView.isNightMode();
+                }
+                ninjaWebView.loadUrl(list.get(position).getURL());
+                hideOverview();
+            });
+
+            listView.setOnItemLongClickListener((parent, view, position, id) -> {
+                showContextMenuList(list.get(position).getTitle(), list.get(position).getURL(), adapter, list, position);
+                return true;
+            });
         }
-
+        title.setText(overViewTab);
         BottomSheetBehavior<View> mBehavior = BottomSheetBehavior.from((View) dialogView.getParent());
         mBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
         mBehavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
@@ -1058,10 +964,7 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
             if (searchBox.getText().length() > 0) {
                 searchBox.setText("");
             } else {
-                searchOnSite = false;
-                HelperUnit.hideSoftKeyboard(searchBox, context);
-                searchPanel.setVisibility(View.GONE);
-                omniBox.setVisibility(View.VISIBLE);
+                stopSearchOnSite();
             }
         });
     }
@@ -1098,7 +1001,7 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
 
         AlertDialog dialog = builder.create();
         dialog.show();
-        Objects.requireNonNull(dialog.getWindow()).setGravity(Gravity.BOTTOM);
+        Objects.requireNonNull(dialog.getWindow()).setGravity(Gravity.TOP);
 
         //ProfileControl
 
@@ -1320,15 +1223,6 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
                 ninjaWebView.reload();
             }
         });
-
-        Button ib_settings = dialogView.findViewById(R.id.ib_settings);
-        ib_settings.setOnClickListener(view -> {
-            if (ninjaWebView != null) {
-                dialog.cancel();
-                Intent settings = new Intent(BrowserActivity.this, Settings_Activity.class);
-                startActivity(settings);
-            }
-        });
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -1369,45 +1263,45 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
                 if (sp.getBoolean("sp_swipeToReload", true)) {
                     ninjaWebView.reload();
                 }
-                if (sp.getBoolean("hideToolbar", true)) {
-                    if (animation == null || !animation.isRunning()) {
-                        animation = ObjectAnimator.ofFloat(bottomAppBar, "translationY", 0);
-                        animation.setDuration(getResources().getInteger(android.R.integer.config_shortAnimTime));
-                        animation.start();
-                    }
-                }
+//                if (sp.getBoolean("hideToolbar", true)) {
+//                    if (animation == null || !animation.isRunning()) {
+//                        animation = ObjectAnimator.ofFloat(bottomAppBar, "translationY", 0);
+//                        animation.setDuration(getResources().getInteger(android.R.integer.config_shortAnimTime));
+//                        animation.start();
+//                    }
+//                }
 
             }
 
             public void onSwipeTop() {
-                if (!ninjaWebView.canScrollVertically(0) && sp.getBoolean("hideToolbar", true)) {
-                    if (animation == null || !animation.isRunning()) {
-                        animation = ObjectAnimator.ofFloat(bottomAppBar, "translationY", bottomAppBar.getHeight());
-                        animation.setDuration(getResources().getInteger(android.R.integer.config_shortAnimTime));
-                        animation.start();
-                    }
-                }
+//                if (!ninjaWebView.canScrollVertically(0) && sp.getBoolean("hideToolbar", true)) {
+//                    if (animation == null || !animation.isRunning()) {
+//                        animation = ObjectAnimator.ofFloat(bottomAppBar, "translationY", bottomAppBar.getHeight());
+//                        animation.setDuration(getResources().getInteger(android.R.integer.config_shortAnimTime));
+//                        animation.start();
+//                    }
+//                }
             }
         };
 
         ninjaWebView.setOnTouchListener(swipeTouchListener);
         ninjaWebView.setOnScrollChangeListener((scrollY, oldScrollY) -> {
             if (!searchOnSite) {
-                if (sp.getBoolean("hideToolbar", true)) {
-                    if (scrollY > oldScrollY) {
-                        if (animation == null || !animation.isRunning()) {
-                            animation = ObjectAnimator.ofFloat(bottomAppBar, "translationY", bottomAppBar.getHeight());
-                            animation.setDuration(getResources().getInteger(android.R.integer.config_shortAnimTime));
-                            animation.start();
-                        }
-                    } else if (scrollY < oldScrollY) {
-                        if (animation == null || !animation.isRunning()) {
-                            animation = ObjectAnimator.ofFloat(bottomAppBar, "translationY", 0);
-                            animation.setDuration(getResources().getInteger(android.R.integer.config_shortAnimTime));
-                            animation.start();
-                        }
-                    }
-                }
+//                if (sp.getBoolean("hideToolbar", true)) {
+//                    if (scrollY > oldScrollY) {
+//                        if (animation == null || !animation.isRunning()) {
+//                            animation = ObjectAnimator.ofFloat(bottomAppBar, "translationY", bottomAppBar.getHeight());
+//                            animation.setDuration(getResources().getInteger(android.R.integer.config_shortAnimTime));
+//                            animation.start();
+//                        }
+//                    } else if (scrollY < oldScrollY) {
+//                        if (animation == null || !animation.isRunning()) {
+//                            animation = ObjectAnimator.ofFloat(bottomAppBar, "translationY", 0);
+//                            animation.setDuration(getResources().getInteger(android.R.integer.config_shortAnimTime));
+//                            animation.start();
+//                        }
+//                    }
+//                }
             }
             if (scrollY == 0) {
                 ninjaWebView.setOnTouchListener(swipeTouchListener);
@@ -1544,16 +1438,16 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
     private void updateOmniBox() {
 
         badgeDrawable.setNumber(BrowserContainer.size());
-        BadgeUtils.attachBadgeDrawable(badgeDrawable, omniBox_tab, findViewById(R.id.layout));
+        BadgeUtils.attachBadgeDrawable(badgeDrawable, omniBox_overview, findViewById(R.id.layout));
         omniBox_text.clearFocus();
         ninjaWebView = (NinjaWebView) currentAlbumController;
         String url = ninjaWebView.getUrl();
 
         if (url != null) {
 
-            omniBox_tab.setVisibility(View.VISIBLE);
+            omniBox_flavor.setVisibility(View.VISIBLE);
             progressBar.setVisibility(View.GONE);
-            ninjaWebView.setProfileIcon(omniBox_tab);
+            ninjaWebView.setProfileIcon(omniBox_flavor);
             ninjaWebView.initCookieManager(url);
 
             if (Objects.requireNonNull(ninjaWebView.getTitle()).isEmpty()) {
@@ -1562,12 +1456,12 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
                 omniBox_text.setText(ninjaWebView.getTitle());
             }
             if (url.startsWith("https://")) {
-                omniBox_tab.setOnClickListener(v -> showTabView());
+                omniBox_flavor.setOnClickListener(v -> show_dialogFastToggle());
             } else if (url.isEmpty()) {
-                omniBox_tab.setOnClickListener(v -> showTabView());
+                omniBox_flavor.setOnClickListener(v -> show_dialogFastToggle());
                 omniBox_text.setText("");
             } else {
-                omniBox_tab.setOnClickListener(v -> {
+                omniBox_flavor.setOnClickListener(v -> {
                     MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
                     builder.setIcon(R.drawable.icon_alert);
                     builder.setTitle(R.string.app_warning);
@@ -1575,7 +1469,7 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
                     builder.setPositiveButton(R.string.app_ok, (dialog, whichButton) -> ninjaWebView.loadUrl(url.replace("http://", "https://")));
                     builder.setNegativeButton(R.string.app_cancel, (dialog, whichButton) -> {
                         dialog.cancel();
-                        omniBox_tab.setOnClickListener(v2 -> showTabView());
+                        omniBox_flavor.setOnClickListener(v2 -> show_dialogFastToggle());
                     });
                     AlertDialog dialog = builder.create();
                     dialog.show();
@@ -1599,12 +1493,10 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
 
     @Override
     public synchronized void updateProgress(int progress) {
-        progressBar.setOnClickListener(v -> ninjaWebView.stopLoading());
         progressBar.setProgressCompat(progress, true);
         if (progress != BrowserUnit.LOADING_STOPPED) updateOmniBox();
         if (progress < BrowserUnit.PROGRESS_MAX) {
             progressBar.setVisibility(View.VISIBLE);
-            omniBox_tab.setVisibility(View.INVISIBLE);
         }
     }
 
@@ -1776,9 +1668,15 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
 
     private void searchOnSite() {
         searchOnSite = true;
-        omniBox.setVisibility(View.GONE);
         searchPanel.setVisibility(View.VISIBLE);
         HelperUnit.showSoftKeyboard(searchBox, activity);
+    }
+
+    private void stopSearchOnSite() {
+        searchOnSite = false;
+        searchBox.setText("");
+        searchPanel.setVisibility(View.GONE);
+        HelperUnit.hideSoftKeyboard(searchBox, context);
     }
 
     private void saveBookmark() {
@@ -1855,7 +1753,7 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
         builder.setView(dialogView);
         AlertDialog dialog_overflow = builder.create();
         dialog_overflow.show();
-        Objects.requireNonNull(dialog_overflow.getWindow()).setGravity(Gravity.BOTTOM);
+        Objects.requireNonNull(dialog_overflow.getWindow()).setGravity(Gravity.TOP);
         FaviconHelper.setFavicon(context, dialogView, url, R.id.menu_icon, R.drawable.icon_image_broken);
 
         TextView overflow_title = dialogView.findViewById(R.id.overflow_title);
@@ -1866,18 +1764,21 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
             overflow_title.setText(title);
         }
 
-        Button overflow_settings = dialogView.findViewById(R.id.overflow_settings);
-        overflow_settings.setOnClickListener(v -> {
-            dialog_overflow.cancel();
-            show_dialogFastToggle();
-        });
+//        Button overflow_settings = dialogView.findViewById(R.id.overflow_settings);
+//        overflow_settings.setOnClickListener(v -> {
+//            dialog_overflow.cancel();
+//            Intent settings = new Intent(BrowserActivity.this, Settings_Activity.class);
+//            startActivity(settings);
+//        });
 
         final GridView menu_grid_tab = dialogView.findViewById(R.id.overflow_tab);
         final GridView menu_grid_share = dialogView.findViewById(R.id.overflow_share);
         final GridView menu_grid_save = dialogView.findViewById(R.id.overflow_save);
         final GridView menu_grid_other = dialogView.findViewById(R.id.overflow_other);
+        final GridView menuGridRecord = dialogView.findViewById(R.id.overflow_record);
 
         menu_grid_tab.setVisibility(View.VISIBLE);
+        menuGridRecord.setVisibility(View.GONE);
         menu_grid_share.setVisibility(View.GONE);
         menu_grid_save.setVisibility(View.GONE);
         menu_grid_other.setVisibility(View.GONE);
@@ -1919,6 +1820,29 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
             } else if (position == 5) {
                 doubleTapsQuit();
             }
+        });
+
+        // Bookmark
+        GridItem item_bm_1 = new GridItem(0, getString(R.string.album_title_bookmarks), 0);
+        GridItem item_bm_2 = new GridItem(0, getString(R.string.album_title_history), 0);
+        final List<GridItem> gridListBookMark = new LinkedList<>();
+        gridListBookMark.add(item_bm_1);
+        gridListBookMark.add(item_bm_2);
+        GridAdapter gridAdapterBookMark = new GridAdapter(context, gridListBookMark);
+        menuGridRecord.setAdapter(gridAdapterBookMark);
+        gridAdapterBookMark.notifyDataSetChanged();
+        menuGridRecord.setOnItemClickListener((adapterView, view, position, l) -> {
+            switch (position) {
+                case 0:
+                    showBookmarkOverview();
+                    break;
+                case 1:
+                    showHistoryOverview();
+                    break;
+                default:
+                    break;
+            }
+            dialog_overflow.cancel();
         });
 
         // Save
@@ -2045,37 +1969,50 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
         TabLayout.Tab tab_share = tabLayout.newTab().setIcon(R.drawable.icon_menu_share);
         TabLayout.Tab tab_save = tabLayout.newTab().setIcon(R.drawable.icon_menu_save);
         TabLayout.Tab tab_other = tabLayout.newTab().setIcon(R.drawable.icon_dots);
+        TabLayout.Tab tabRecord = tabLayout.newTab().setIcon(R.drawable.icon_web);
 
         tabLayout.addTab(tab_tab);
+        tabLayout.addTab(tabRecord);
         tabLayout.addTab(tab_share);
         tabLayout.addTab(tab_save);
         tabLayout.addTab(tab_other);
 
         tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            private final View[] tabs = new View[]{menu_grid_tab, menuGridRecord, menu_grid_share, menu_grid_save, menu_grid_other};
+
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
-                if (tab.getPosition() == 0) {
-                    menu_grid_tab.setVisibility(View.VISIBLE);
-                    menu_grid_share.setVisibility(View.GONE);
-                    menu_grid_save.setVisibility(View.GONE);
-                    menu_grid_other.setVisibility(View.GONE);
-                } else if (tab.getPosition() == 1) {
-                    menu_grid_tab.setVisibility(View.GONE);
-                    menu_grid_share.setVisibility(View.VISIBLE);
-                    menu_grid_save.setVisibility(View.GONE);
-                    menu_grid_other.setVisibility(View.GONE);
-                } else if (tab.getPosition() == 2) {
-                    menu_grid_tab.setVisibility(View.GONE);
-                    menu_grid_share.setVisibility(View.GONE);
-                    menu_grid_save.setVisibility(View.VISIBLE);
-                    menu_grid_other.setVisibility(View.GONE);
-                } else if (tab.getPosition() == 3) {
-                    menu_grid_tab.setVisibility(View.GONE);
-                    menu_grid_share.setVisibility(View.GONE);
-                    menu_grid_save.setVisibility(View.GONE);
-                    menu_grid_other.setVisibility(View.VISIBLE);
+                for (int i = 0; i < tabs.length; i++) {
+                    if (tab.getPosition() == i) {
+                        tabs[i].setVisibility(View.VISIBLE);
+                    } else {
+                        tabs[i].setVisibility(View.GONE);
+                    }
                 }
+//                if (tab.getPosition() == 0) {
+//                    menu_grid_tab.setVisibility(View.VISIBLE);
+//                    menu_grid_share.setVisibility(View.GONE);
+//                    menu_grid_save.setVisibility(View.GONE);
+//                    menu_grid_other.setVisibility(View.GONE);
+//                } else if (tab.getPosition() == 1) {
+//                    menu_grid_tab.setVisibility(View.GONE);
+//                    menu_grid_share.setVisibility(View.VISIBLE);
+//                    menu_grid_save.setVisibility(View.GONE);
+//                    menu_grid_other.setVisibility(View.GONE);
+//                } else if (tab.getPosition() == 2) {
+//                    menu_grid_tab.setVisibility(View.GONE);
+//                    menu_grid_share.setVisibility(View.GONE);
+//                    menu_grid_save.setVisibility(View.VISIBLE);
+//                    menu_grid_other.setVisibility(View.GONE);
+//                } else if (tab.getPosition() == 3) {
+//                    menu_grid_tab.setVisibility(View.GONE);
+//                    menu_grid_share.setVisibility(View.GONE);
+//                    menu_grid_save.setVisibility(View.GONE);
+//                    menu_grid_other.setVisibility(View.VISIBLE);
+//                } else if (tab.getPosition() == 4) {
+//
+//                }
             }
 
             @Override

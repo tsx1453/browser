@@ -1,26 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<RelativeLayout
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+    android:paddingTop="12dp">
+
+    <TextView
+        android:id="@+id/overview_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="12dp"
+        android:text="@string/album_title_bookmarks"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <ImageButton
+        android:id="@+id/overview_close"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@id/overview_title"
+        android:layout_alignBottom="@id/overview_title"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="12dp"
+        android:background="@android:color/transparent"
+        android:contentDescription="@null"
+        android:src="@drawable/icon_close"
+        app:layout_constraintBottom_toBottomOf="@id/overview_title"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/overview_title" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0.5dp"
+        android:layout_below="@id/overview_title"
+        android:layout_marginTop="8dp"
+        android:background="?attr/colorPrimary" />
 
     <ListView
-        android:layout_above="@+id/bottom_navigation"
-        android:paddingTop="8dp"
         android:id="@+id/list_overView"
-        android:stackFromBottom="true"
-        android:fastScrollEnabled="true"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/overview_title"
+        android:layout_marginTop="12dp"
         android:divider="@null"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
-
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:layout_alignParentBottom="true"
-        android:id="@+id/bottom_navigation"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:menu="@menu/menu_bottom_overview" />
+        android:fastScrollEnabled="true" />
 
 </RelativeLayout>
