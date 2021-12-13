@@ -199,24 +199,15 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
     }
 
     private final ViewTreeObserver.OnGlobalLayoutListener keyboardLayoutListener = new ViewTreeObserver.OnGlobalLayoutListener() {
-        private void updateSearchLayoutOnKeyboardChange(boolean keyboardShow) {
-//            if (searchPanel != null && searchPanel.getVisibility() == View.VISIBLE) {
-//                if (searchPanel.getLayoutParams() instanceof ViewGroup.MarginLayoutParams) {
-//                    ((ViewGroup.MarginLayoutParams) searchPanel.getLayoutParams()).setMargins(0, 0, 0, keyboardShow ? mLastContentHeight : 0);
-//                }
-//            }
-        }
 
         @Override
         public void onGlobalLayout() {
             int currentContentHeight = findViewById(Window.ID_ANDROID_CONTENT).getHeight();
             if (mLastContentHeight > currentContentHeight + 100) {
                 mLastContentHeight = currentContentHeight;
-                updateSearchLayoutOnKeyboardChange(true);
             } else if (currentContentHeight > mLastContentHeight + 100) {
                 mLastContentHeight = currentContentHeight;
                 omniBox_text.clearFocus();
-                updateSearchLayoutOnKeyboardChange(false);
             }
         }
     };
@@ -232,13 +223,6 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
-            @Override
-            public void uncaughtException(@NonNull Thread thread, @NonNull Throwable throwable) {
-                throwable.printStackTrace();
-                finish();
-            }
-        });
         super.onCreate(savedInstanceState);
         activity = BrowserActivity.this;
         context = BrowserActivity.this;
@@ -502,7 +486,7 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
     @Override
     public void updateAutoComplete() {
         RecordAction action = new RecordAction(this);
-        List<Record> list = action.listEntries(activity);
+        List<Record> list = action.listEntries();
         CompleteAdapter adapter = new CompleteAdapter(this, R.layout.item_icon_left, list);
         omniBox_text.setAdapter(adapter);
         adapter.notifyDataSetChanged();
@@ -532,12 +516,17 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
 //    }
 
     private void showBookmarkOverview() {
-        initOverview(true);
+        initOverview(0);
         bottomSheetDialog_OverView.show();
     }
 
     private void showHistoryOverview() {
-        initOverview(false);
+        initOverview(1);
+        bottomSheetDialog_OverView.show();
+    }
+
+    private void showHomePageOverview() {
+        initOverview(2);
         bottomSheetDialog_OverView.show();
     }
 
@@ -819,7 +808,7 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
     }
 
     @SuppressLint("ClickableViewAccessibility")
-    private void initOverview(boolean bookMark) {
+    private void initOverview(int type) {
         bottomSheetDialog_OverView = new BottomSheetDialog(context);
         View dialogView = View.inflate(context, R.layout.dialog_overview, null);
         TextView title = dialogView.findViewById(R.id.overview_title);
@@ -843,81 +832,107 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
         });
 
         bottomSheetDialog_OverView.setContentView(dialogView);
+        RecordAction action = new RecordAction(context);
+        action.open(false);
+        final List<Record> list;
+        switch (type) {
+            case 0:
+                overViewTab = getString(R.string.album_title_bookmarks);
+                list = action.listBookmark(activity, filter, filterBy);
+                action.close();
 
-        if (bookMark) {
-            overViewTab = getString(R.string.album_title_bookmarks);
+                adapter = new RecordAdapter(context, list) {
+                    @SuppressWarnings("NullableProblems")
+                    @Override
+                    public View getView(int position, View convertView, @NonNull ViewGroup parent) {
+                        View v = super.getView(position, convertView, parent);
+                        ImageView record_item_icon = v.findViewById(R.id.record_item_icon);
+                        record_item_icon.setVisibility(View.VISIBLE);
+                        return v;
+                    }
+                };
 
-            RecordAction action = new RecordAction(context);
-            action.open(false);
-            final List<Record> list;
-            list = action.listBookmark(activity, filter, filterBy);
-            action.close();
+                listView.setAdapter(adapter);
+                adapter.notifyDataSetChanged();
+                filter = false;
+                listView.setOnItemClickListener((parent, view, position, id) -> {
+                    if (list.get(position).getDesktopMode() != ninjaWebView.isDesktopMode())
+                        ninjaWebView.toggleDesktopMode(false);
+                    if (list.get(position).getNightMode() == ninjaWebView.isNightMode() && !isNightMode) {
+                        ninjaWebView.toggleNightMode();
+                        isNightMode = ninjaWebView.isNightMode();
+                    }
+                    ninjaWebView.loadUrl(list.get(position).getURL());
+                    hideOverview();
+                });
+                listView.setOnItemLongClickListener((parent, view, position, id) -> {
+                    showContextMenuList(list.get(position).getTitle(), list.get(position).getURL(), adapter, list, position);
+                    return true;
+                });
+                break;
+            case 1:
+                overViewTab = getString(R.string.album_title_history);
 
-            adapter = new RecordAdapter(context, list) {
-                @SuppressWarnings("NullableProblems")
-                @Override
-                public View getView(int position, View convertView, @NonNull ViewGroup parent) {
-                    View v = super.getView(position, convertView, parent);
-                    ImageView record_item_icon = v.findViewById(R.id.record_item_icon);
-                    record_item_icon.setVisibility(View.VISIBLE);
-                    return v;
-                }
-            };
 
-            listView.setAdapter(adapter);
-            adapter.notifyDataSetChanged();
-            filter = false;
-            listView.setOnItemClickListener((parent, view, position, id) -> {
-                if (list.get(position).getDesktopMode() != ninjaWebView.isDesktopMode())
-                    ninjaWebView.toggleDesktopMode(false);
-                if (list.get(position).getNightMode() == ninjaWebView.isNightMode() && !isNightMode) {
-                    ninjaWebView.toggleNightMode();
-                    isNightMode = ninjaWebView.isNightMode();
-                }
-                ninjaWebView.loadUrl(list.get(position).getURL());
-                hideOverview();
-            });
-            listView.setOnItemLongClickListener((parent, view, position, id) -> {
-                showContextMenuList(list.get(position).getTitle(), list.get(position).getURL(), adapter, list, position);
-                return true;
-            });
-        } else {
-            overViewTab = getString(R.string.album_title_history);
+                list = action.listHistory();
+                action.close();
 
-            RecordAction action = new RecordAction(context);
-            action.open(false);
-            final List<Record> list;
-            list = action.listHistory();
-            action.close();
+                //noinspection NullableProblems
+                adapter = new RecordAdapter(context, list) {
+                    @Override
+                    public View getView(int position, View convertView, @NonNull ViewGroup parent) {
+                        View v = super.getView(position, convertView, parent);
+                        TextView record_item_time = v.findViewById(R.id.record_item_time);
+                        record_item_time.setVisibility(View.VISIBLE);
+                        return v;
+                    }
+                };
 
-            //noinspection NullableProblems
-            adapter = new RecordAdapter(context, list) {
-                @Override
-                public View getView(int position, View convertView, @NonNull ViewGroup parent) {
-                    View v = super.getView(position, convertView, parent);
-                    TextView record_item_time = v.findViewById(R.id.record_item_time);
-                    record_item_time.setVisibility(View.VISIBLE);
-                    return v;
-                }
-            };
+                listView.setAdapter(adapter);
+                adapter.notifyDataSetChanged();
+                listView.setOnItemClickListener((parent, view, position, id) -> {
+                    if (list.get(position).getDesktopMode() != ninjaWebView.isDesktopMode())
+                        ninjaWebView.toggleDesktopMode(false);
+                    if (list.get(position).getNightMode() == ninjaWebView.isNightMode() && !isNightMode) {
+                        ninjaWebView.toggleNightMode();
+                        isNightMode = ninjaWebView.isNightMode();
+                    }
+                    ninjaWebView.loadUrl(list.get(position).getURL());
+                    hideOverview();
+                });
 
-            listView.setAdapter(adapter);
-            adapter.notifyDataSetChanged();
-            listView.setOnItemClickListener((parent, view, position, id) -> {
-                if (list.get(position).getDesktopMode() != ninjaWebView.isDesktopMode())
-                    ninjaWebView.toggleDesktopMode(false);
-                if (list.get(position).getNightMode() == ninjaWebView.isNightMode() && !isNightMode) {
-                    ninjaWebView.toggleNightMode();
-                    isNightMode = ninjaWebView.isNightMode();
-                }
-                ninjaWebView.loadUrl(list.get(position).getURL());
-                hideOverview();
-            });
+                listView.setOnItemLongClickListener((parent, view, position, id) -> {
+                    showContextMenuList(list.get(position).getTitle(), list.get(position).getURL(), adapter, list, position);
+                    return true;
+                });
+                break;
+            case 2:
+                omniBox_overview.setImageResource(R.drawable.icon_web);
+                overViewTab = getString(R.string.album_title_home);
 
-            listView.setOnItemLongClickListener((parent, view, position, id) -> {
-                showContextMenuList(list.get(position).getTitle(), list.get(position).getURL(), adapter, list, position);
-                return true;
-            });
+                list = action.listStartSite();
+                action.close();
+
+                adapter = new RecordAdapter(context, list);
+                listView.setAdapter(adapter);
+                adapter.notifyDataSetChanged();
+
+                listView.setOnItemClickListener((parent, view, position, id) -> {
+                    if (list.get(position).getDesktopMode() != ninjaWebView.isDesktopMode())
+                        ninjaWebView.toggleDesktopMode(false);
+                    if (list.get(position).getNightMode() == ninjaWebView.isNightMode() && !isNightMode) {
+                        ninjaWebView.toggleNightMode();
+                        isNightMode = ninjaWebView.isNightMode();
+                    }
+                    ninjaWebView.loadUrl(list.get(position).getURL());
+                    hideOverview();
+                });
+
+                listView.setOnItemLongClickListener((parent, view, position, id) -> {
+                    showContextMenuList(list.get(position).getTitle(), list.get(position).getURL(), adapter, list, position);
+                    return true;
+                });
+                break;
         }
         title.setText(overViewTab);
         BottomSheetBehavior<View> mBehavior = BottomSheetBehavior.from((View) dialogView.getParent());
@@ -1825,9 +1840,11 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
         // Bookmark
         GridItem item_bm_1 = new GridItem(0, getString(R.string.album_title_bookmarks), 0);
         GridItem item_bm_2 = new GridItem(0, getString(R.string.album_title_history), 0);
+        GridItem item_bm_3 = new GridItem(0, getString(R.string.album_title_home), 0);
         final List<GridItem> gridListBookMark = new LinkedList<>();
         gridListBookMark.add(item_bm_1);
         gridListBookMark.add(item_bm_2);
+        gridListBookMark.add(item_bm_3);
         GridAdapter gridAdapterBookMark = new GridAdapter(context, gridListBookMark);
         menuGridRecord.setAdapter(gridAdapterBookMark);
         gridAdapterBookMark.notifyDataSetChanged();
@@ -1838,6 +1855,9 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
                     break;
                 case 1:
                     showHistoryOverview();
+                    break;
+                case 2:
+                    showHomePageOverview();
                     break;
                 default:
                     break;

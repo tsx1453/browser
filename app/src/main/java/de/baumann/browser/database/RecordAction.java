@@ -16,6 +16,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 
+import de.baumann.browser.Browser;
 import de.baumann.browser.unit.RecordUnit;
 
 public class RecordAction {
@@ -64,10 +65,10 @@ public class RecordAction {
         return true;
     }
 
-    public List<Record> listStartSite (Activity activity) {
+    public List<Record> listStartSite () {
 
         List<Record> list = new LinkedList<>();
-        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(activity);
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(Browser.getConfig().context);
         String sortBy = Objects.requireNonNull(sp.getString("sort_startSite", "ordinal"));
 
         Cursor cursor;
@@ -329,12 +330,13 @@ public class RecordAction {
         return record;
     }
 
-    public List<Record> listEntries (Activity activity) {
+    public List<Record> listEntries() {
+        Context context = Browser.getConfig().context;
         List<Record> list = new ArrayList<>();
-        RecordAction action = new RecordAction(activity);
+        RecordAction action = new RecordAction(context);
         action.open(false);
-        list.addAll(action.listBookmark(activity, false, 0)); //move bookmarks to top of list
-        list.addAll(action.listStartSite(activity));
+        list.addAll(action.listBookmark(context, false, 0)); //move bookmarks to top of list
+        list.addAll(action.listStartSite());
         list.addAll(action.listHistory());
         action.close();
         return list;

@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.PorterDuff;
 import android.net.Uri;
 import android.net.http.SslError;
@@ -29,10 +30,15 @@ import android.widget.EditText;
 import android.widget.ImageView;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.util.Objects;
 
+import de.baumann.browser.Browser;
+import de.baumann.browser.Constant;
 import de.baumann.browser.R;
+import de.baumann.browser.database.FaviconHelper;
 import de.baumann.browser.database.Record;
 import de.baumann.browser.database.RecordAction;
 import de.baumann.browser.unit.BrowserUnit;
@@ -67,11 +73,11 @@ public class NinjaWebViewClient extends WebViewClient {
             ninjaWebView.postInvalidate();
         }
 
-        if(sp.getBoolean("onPageFinished",false)) {
+        if (sp.getBoolean("onPageFinished", false)) {
             view.evaluateJavascript(Objects.requireNonNull(sp.getString("sp_onPageFinished", "")), null);
         }
 
-        if(ninjaWebView.isSaveData()) {
+        if (ninjaWebView.isSaveData()) {
             view.evaluateJavascript("var links=document.getElementsByTagName('video'); for(let i=0;i<links.length;i++){links[i].pause()};", null);
         }
 
@@ -81,7 +87,7 @@ public class NinjaWebViewClient extends WebViewClient {
             if (action.checkUrl(ninjaWebView.getUrl(), RecordUnit.TABLE_HISTORY)) {
                 action.deleteURL(ninjaWebView.getUrl(), RecordUnit.TABLE_HISTORY);
             }
-            action.addHistory(new Record(ninjaWebView.getTitle(), ninjaWebView.getUrl(), System.currentTimeMillis(), 0,0,ninjaWebView.isDesktopMode(),ninjaWebView.isNightMode(),0));
+            action.addHistory(new Record(ninjaWebView.getTitle(), ninjaWebView.getUrl(), System.currentTimeMillis(), 0, 0, ninjaWebView.isDesktopMode(), ninjaWebView.isNightMode(), 0));
             action.close();
         }
     }
@@ -90,13 +96,13 @@ public class NinjaWebViewClient extends WebViewClient {
     public void onPageStarted(WebView view, String url, Bitmap favicon) {
         ninjaWebView.setStopped(false);
         ninjaWebView.resetFavicon();
-        super.onPageStarted(view,url,favicon);
+        super.onPageStarted(view, url, favicon);
 
-        if(sp.getBoolean("onPageStarted",false)) {
+        if (sp.getBoolean("onPageStarted", false)) {
             view.evaluateJavascript(Objects.requireNonNull(sp.getString("sp_onPageStarted", "")), null);
         }
 
-        if(ninjaWebView.isFingerPrintProtection()) {
+        if (ninjaWebView.isFingerPrintProtection()) {
 
             //Block WebRTC requests which can reveal local IP address
             //Tested with https://diafygi.github.io/webrtc-ips/
@@ -105,7 +111,7 @@ public class NinjaWebViewClient extends WebViewClient {
                     "      console.log('webRTC snoop');\n" +
                     "      return null;\n" +
                     "    };\n" +
-                    "  });",null);
+                    "  });", null);
 
             //Prevent canvas fingerprinting by randomizing
             //can be tested e.g. at https://webbrowsertools.com
@@ -403,7 +409,7 @@ public class NinjaWebViewClient extends WebViewClient {
 
             if (!ninjaWebView.isCamera()) {
                 view.evaluateJavascript("" +
-                    "Object.defineProperty(navigator, 'mediaDevices',{value:null});", null);
+                        "Object.defineProperty(navigator, 'mediaDevices',{value:null});", null);
             }
         }
     }
@@ -411,18 +417,19 @@ public class NinjaWebViewClient extends WebViewClient {
     @Override
     public void onLoadResource(WebView view, String url) {
 
-        if(sp.getBoolean("onLoadResource",false)) {
+        if (sp.getBoolean("onLoadResource", false)) {
             view.evaluateJavascript(Objects.requireNonNull(sp.getString("sp_onLoadResource", "")), null);
         }
 
-        if(ninjaWebView.isFingerPrintProtection()) {
+        if (ninjaWebView.isFingerPrintProtection()) {
             view.evaluateJavascript("var test=document.querySelector(\"a[ping]\"); if(test!==null){test.removeAttribute('ping')};", null);
             //do not allow ping on http only pages (tested with http://tests.caniuse.com)
         }
 
-        if (view.getSettings().getUseWideViewPort() && (view.getWidth()<1300)) view.evaluateJavascript("document.querySelector('meta[name=\"viewport\"]').setAttribute('content', 'width=1200px');", null);
+        if (view.getSettings().getUseWideViewPort() && (view.getWidth() < 1300))
+            view.evaluateJavascript("document.querySelector('meta[name=\"viewport\"]').setAttribute('content', 'width=1200px');", null);
         //  Client-side detection for GlobalPrivacyControl
-        view.evaluateJavascript("if (navigator.globalPrivacyControl === undefined) { Object.defineProperty(navigator, 'globalPrivacyControl', { value: true, writable: false,configurable: false});} else {try { navigator.globalPrivacyControl = true;} catch (e) { console.error('globalPrivacyControl is not writable: ', e); }};",null);
+        view.evaluateJavascript("if (navigator.globalPrivacyControl === undefined) { Object.defineProperty(navigator, 'globalPrivacyControl', { value: true, writable: false,configurable: false});} else {try { navigator.globalPrivacyControl = true;} catch (e) { console.error('globalPrivacyControl is not writable: ', e); }};", null);
         //  Script taken from:
         //
         //  donotsell.js
@@ -442,9 +449,9 @@ public class NinjaWebViewClient extends WebViewClient {
         //  See the License for the specific language governing permissions and
         //  limitations under the License.
         //
-        view.evaluateJavascript("if (navigator.doNotTrack === null) { Object.defineProperty(navigator, 'doNotTrack', { value: 1, writable: false,configurable: false});} else {try { navigator.doNotTrack = 1;} catch (e) { console.error('doNotTrack is not writable: ', e); }};",null);
-        view.evaluateJavascript("if (window.doNotTrack === undefined) { Object.defineProperty(window, 'doNotTrack', { value: 1, writable: false,configurable: false});} else {try { window.doNotTrack = 1;} catch (e) { console.error('doNotTrack is not writable: ', e); }};",null);
-        view.evaluateJavascript("if (navigator.msDoNotTrack === undefined) { Object.defineProperty(navigator, 'msDoNotTrack', { value: 1, writable: false,configurable: false});} else {try { navigator.msDoNotTrack = 1;} catch (e) { console.error('msDoNotTrack is not writable: ', e); }};",null);
+        view.evaluateJavascript("if (navigator.doNotTrack === null) { Object.defineProperty(navigator, 'doNotTrack', { value: 1, writable: false,configurable: false});} else {try { navigator.doNotTrack = 1;} catch (e) { console.error('doNotTrack is not writable: ', e); }};", null);
+        view.evaluateJavascript("if (window.doNotTrack === undefined) { Object.defineProperty(window, 'doNotTrack', { value: 1, writable: false,configurable: false});} else {try { window.doNotTrack = 1;} catch (e) { console.error('doNotTrack is not writable: ', e); }};", null);
+        view.evaluateJavascript("if (navigator.msDoNotTrack === undefined) { Object.defineProperty(navigator, 'msDoNotTrack', { value: 1, writable: false,configurable: false});} else {try { navigator.msDoNotTrack = 1;} catch (e) { console.error('msDoNotTrack is not writable: ', e); }};", null);
     }
 
     @Override
@@ -455,7 +462,7 @@ public class NinjaWebViewClient extends WebViewClient {
 
     @SuppressLint("QueryPermissionsNeeded")
     private boolean handleUri(final Uri uri) {
-        if (ninjaWebView.isBackPressed){
+        if (ninjaWebView.isBackPressed) {
             return false;
         } else {
             // handle the url by implementing your logic
@@ -498,6 +505,16 @@ public class NinjaWebViewClient extends WebViewClient {
                     BrowserUnit.MIME_TYPE_TEXT_PLAIN,
                     BrowserUnit.URL_ENCODING,
                     new ByteArrayInputStream("".getBytes())
+            );
+        }
+        if (Constant.CUSTOM_FAVICON_HOST.equals(request.getUrl().getScheme())) {
+            Bitmap f = new FaviconHelper(Browser.getConfig().context).getFavicon(request.getUrl().toString());
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            f.compress(Bitmap.CompressFormat.PNG, 100, baos);
+            return new WebResourceResponse(
+                    "image/png",
+                    "UTF-8",
+                    new ByteArrayInputStream(baos.toByteArray())
             );
         }
         return super.shouldInterceptRequest(view, request);

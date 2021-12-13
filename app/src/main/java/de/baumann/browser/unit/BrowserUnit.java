@@ -38,7 +38,6 @@ public class BrowserUnit {
 
     private static final String SEARCH_ENGINE_GOOGLE = "https://www.google.com/search?q=";
     private static final String SEARCH_ENGINE_DUCKDUCKGO = "https://duckduckgo.com/?q=";
-    private static final String SEARCH_ENGINE_STARTPAGE = "https://startpage.com/do/search?query=";
     private static final String SEARCH_ENGINE_BING = "https://www.bing.com/search?q=";
     private static final String SEARCH_ENGINE_BAIDU = "https://www.baidu.com/s?wd=";
     private static final String SEARCH_ENGINE_QWANT = "https://www.qwant.com/?q=";
@@ -127,8 +126,6 @@ public class BrowserUnit {
                     return SEARCH_ENGINE_BING + query;
                 case 4:
                     return SEARCH_ENGINE_DUCKDUCKGO + query;
-                case 5:
-                    return SEARCH_ENGINE_GOOGLE + query;
                 case 6:
                     return SEARCH_ENGINE_SEARX + query;
                 case 7:
@@ -138,7 +135,7 @@ public class BrowserUnit {
                 case 9:
                     return SEARCH_ENGINE_Metager + query;
                 default:
-                    return SEARCH_ENGINE_STARTPAGE + query;
+                    return SEARCH_ENGINE_GOOGLE + query;
             }
         }
     }
