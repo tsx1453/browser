@@ -1353,7 +1353,7 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
         updateOmniBox();
     }
 
-    private synchronized void addAlbum(String title, final String url, final boolean foreground, final boolean profileDialog, String profile) {
+    public synchronized void addAlbum(String title, final String url, final boolean foreground, final boolean profileDialog, String profile) {
 
         //restoreProfile from shared preferences if app got killed
         if (!profile.equals("")) sp.edit().putString("profile", profile).apply();

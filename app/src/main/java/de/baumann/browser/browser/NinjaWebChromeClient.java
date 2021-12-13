@@ -2,6 +2,7 @@ package de.baumann.browser.browser;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -18,6 +19,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import java.util.Objects;
 
 import de.baumann.browser.R;
+import de.baumann.browser.activity.BrowserActivity;
 import de.baumann.browser.unit.HelperUnit;
 import de.baumann.browser.view.NinjaWebView;
 
@@ -53,9 +55,17 @@ public class NinjaWebChromeClient extends WebChromeClient {
         newWebView.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-                Intent browserIntent = new Intent(Intent.ACTION_VIEW);
-                browserIntent.setData(request.getUrl());
-                context.startActivity(browserIntent);
+//                Intent browserIntent = new Intent(Intent.ACTION_VIEW);
+//                browserIntent.setData(request.getUrl());
+//                context.startActivity(browserIntent);
+//                return true;
+                Context context = view.getContext();
+                while (context instanceof ContextWrapper) {
+                    if (context instanceof BrowserActivity) {
+                        ((BrowserActivity) context).addAlbum("", request.getUrl().toString(), true, false, "");
+                    }
+                    context = ((ContextWrapper) context).getBaseContext();
+                }
                 return true;
             }
         });
@@ -82,20 +92,20 @@ public class NinjaWebChromeClient extends WebChromeClient {
 
     @Override
     public void onGeolocationPermissionsShowPrompt(String origin, GeolocationPermissions.Callback callback) {
-        Activity activity =  (Activity) ninjaWebView.getContext();
+        Activity activity = (Activity) ninjaWebView.getContext();
         HelperUnit.grantPermissionsLoc(activity);
         callback.invoke(origin, true, false);
         super.onGeolocationPermissionsShowPrompt(origin, callback);
     }
 
     @Override
-    public void onPermissionRequest(final PermissionRequest request){
+    public void onPermissionRequest(final PermissionRequest request) {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(ninjaWebView.getContext());
-        Activity activity =  (Activity) ninjaWebView.getContext();
+        Activity activity = (Activity) ninjaWebView.getContext();
         String[] resources = request.getResources();
         for (String resource : resources) {
             if (PermissionRequest.RESOURCE_VIDEO_CAPTURE.equals(resource)) {
-                if (sp.getBoolean(ninjaWebView.getProfile()+"_camera", false)) {
+                if (sp.getBoolean(ninjaWebView.getProfile() + "_camera", false)) {
                     HelperUnit.grantPermissionsCamera(activity);
                     if (ninjaWebView.getSettings().getMediaPlaybackRequiresUserGesture()) {
                         ninjaWebView.getSettings().setMediaPlaybackRequiresUserGesture(false);  //fix conflict with save data option. Temporarily switch off setMediaPlaybackRequiresUserGesture
@@ -103,8 +113,8 @@ public class NinjaWebChromeClient extends WebChromeClient {
                     }
                     request.grant(request.getResources());
                 }
-            } else if (PermissionRequest.RESOURCE_AUDIO_CAPTURE.equals(resource)){
-                if (sp.getBoolean(ninjaWebView.getProfile()+"_microphone", false)) {
+            } else if (PermissionRequest.RESOURCE_AUDIO_CAPTURE.equals(resource)) {
+                if (sp.getBoolean(ninjaWebView.getProfile() + "_microphone", false)) {
                     HelperUnit.grantPermissionsMic(activity);
                     request.grant(request.getResources());
                 }
@@ -125,6 +135,7 @@ public class NinjaWebChromeClient extends WebChromeClient {
     @Override
     public void onReceivedIcon(WebView view, Bitmap icon) {
         ninjaWebView.setFavicon(icon);
+        ninjaWebView.updateFavicon(view.getUrl());
         super.onReceivedIcon(view, icon);
     }
 
