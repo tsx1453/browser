@@ -386,10 +386,10 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
             }
         }
 
-        if (sp.getInt("restart_changed", 1) == 1) {
-            saveOpenedTabs();
-            HelperUnit.triggerRebirth(context);
-        }
+//        if (sp.getInt("restart_changed", 1) == 1) {
+//            saveOpenedTabs();
+//            HelperUnit.triggerRebirth(context);
+//        }
         if (sp.getBoolean("pdf_create", false)) {
             sp.edit().putBoolean("pdf_create", false).apply();
             MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
