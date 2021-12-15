@@ -22,7 +22,7 @@ public class SP {
         return ins;
     }
 
-    private final SharedPreferences sharedPreferences;
+    public final SharedPreferences sharedPreferences;
 
     private SP(Context context) {
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);

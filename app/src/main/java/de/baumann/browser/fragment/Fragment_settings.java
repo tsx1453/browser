@@ -4,7 +4,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.widget.EditText;
 
+import androidx.annotation.NonNull;
 import androidx.preference.EditTextPreference;
 import androidx.preference.ListPreference;
 import androidx.preference.Preference;
@@ -18,6 +20,7 @@ import de.baumann.browser.activity.Settings_Gesture;
 import de.baumann.browser.activity.Settings_PrivacyActivity;
 import de.baumann.browser.activity.Settings_UI;
 import de.baumann.browser.R;
+import de.baumann.browser.storage.SP;
 
 public class Fragment_settings extends PreferenceFragmentCompat implements SharedPreferences.OnSharedPreferenceChangeListener {
 
@@ -32,9 +35,9 @@ public class Fragment_settings extends PreferenceFragmentCompat implements Share
         Preference settings_filter = findPreference("settings_filter");
         assert settings_filter != null;
         settings_filter.setOnPreferenceClickListener(preference -> {
-           Intent intent = new Intent(getActivity(), Settings_Filter.class);
-           requireActivity().startActivity(intent);
-           return false;
+            Intent intent = new Intent(getActivity(), Settings_Filter.class);
+            requireActivity().startActivity(intent);
+            return false;
         });
 
         Preference settings_data = findPreference("settings_data");
@@ -76,6 +79,13 @@ public class Fragment_settings extends PreferenceFragmentCompat implements Share
             requireActivity().startActivity(intent);
             return false;
         });
+
+        EditTextPreference settingsFavorite = findPreference("favoriteURL");
+        if (settingsFavorite != null) {
+            settingsFavorite.setDefaultValue(SP.getInstance().getFavoriteUrl());
+            settingsFavorite.setText(SP.getInstance().getFavoriteUrl());
+            settingsFavorite.setSummary(SP.getInstance().getFavoriteUrl());
+        }
     }
 
     private void initSummary(Preference p) {
@@ -99,7 +109,7 @@ public class Fragment_settings extends PreferenceFragmentCompat implements Share
             if (p.getTitle().toString().toLowerCase().contains("password")) {
                 p.setSummary("******");
             } else {
-                if (p.getSummaryProvider()==null)   p.setSummary(editTextPref.getText());
+                if (p.getSummaryProvider() == null) p.setSummary(editTextPref.getText());
             }
         }
     }
@@ -112,6 +122,8 @@ public class Fragment_settings extends PreferenceFragmentCompat implements Share
                 key.equals("userAgentSwitch") ||
                 key.equals("sp_search_engine")) {
             sp.edit().putInt("restart_changed", 1).apply();
+            updatePrefSummary(findPreference(key));
+        } else if (key.equals("favoriteURL")) {
             updatePrefSummary(findPreference(key));
         }
     }

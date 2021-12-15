@@ -4,12 +4,12 @@
 
     <!-- Search engine -->
     <string-array name="setting_entries_search_engine">
-        <item>@string/setting_summary_search_engine_startpage</item>
-        <item>@string/setting_summary_search_engine_startpage_de</item>
+<!--        <item>@string/setting_summary_search_engine_startpage</item>-->
+<!--        <item>@string/setting_summary_search_engine_startpage_de</item>-->
+        <item>@string/setting_summary_search_engine_google</item>
         <item>@string/setting_summary_search_engine_baidu</item>
         <item>@string/setting_summary_search_engine_bing</item>
         <item>@string/setting_summary_search_engine_duckduckgo</item>
-        <item>@string/setting_summary_search_engine_google</item>
         <item>@string/setting_summary_search_engine_searx</item>
         <item>@string/setting_summary_search_engine_qwant</item>
         <item>@string/setting_summary_search_engine_ecosia</item>
@@ -25,8 +25,8 @@
         <item>5</item>
         <item>6</item>
         <item>7</item>
-        <item>8</item>
-        <item>9</item>
+<!--        <item>8</item>-->
+<!--        <item>9</item>-->
     </string-array>
 
     <!-- User agent -->

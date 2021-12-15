@@ -119,20 +119,18 @@ public class BrowserUnit {
             final int i = Integer.parseInt(Objects.requireNonNull(sp.getString("sp_search_engine", "0")));
             switch (i) {
                 case 1:
-                    return SEARCH_ENGINE_STARTPAGE_DE + query;
-                case 2:
                     return SEARCH_ENGINE_BAIDU + query;
-                case 3:
+                case 2:
                     return SEARCH_ENGINE_BING + query;
-                case 4:
+                case 3:
                     return SEARCH_ENGINE_DUCKDUCKGO + query;
-                case 6:
+                case 4:
                     return SEARCH_ENGINE_SEARX + query;
-                case 7:
+                case 5:
                     return SEARCH_ENGINE_QWANT + query;
-                case 8:
+                case 6:
                     return SEARCH_ENGINE_ECOSIA + query;
-                case 9:
+                case 7:
                     return SEARCH_ENGINE_Metager + query;
                 default:
                     return SEARCH_ENGINE_GOOGLE + query;
