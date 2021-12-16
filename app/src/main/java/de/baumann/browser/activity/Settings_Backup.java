@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 
+import com.liuzho.lib.baseutils.BaseUtils;
 import com.liuzho.lib.baseutils.ScreenUtils;
 
 import java.util.Objects;
@@ -28,7 +29,9 @@ public class Settings_Backup extends AppCompatActivity {
 
         if (getSupportActionBar() != null) getSupportActionBar().hide();
         ScreenUtils.translucent(this);
-        getWindow().getDecorView().setSystemUiVisibility(getWindow().getDecorView().getSystemUiVisibility() | View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+        if (!BaseUtils.isNight(this)) {
+            getWindow().getDecorView().setSystemUiVisibility(getWindow().getDecorView().getSystemUiVisibility() | View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+        }
 
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
         HelperUnit.initTheme(this);

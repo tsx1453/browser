@@ -22,6 +22,7 @@ import android.widget.TextView;
 
 import com.google.android.material.color.DynamicColors;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.liuzho.lib.baseutils.BaseUtils;
 import com.liuzho.lib.baseutils.ScreenUtils;
 
 import java.util.Objects;
@@ -39,7 +40,9 @@ public class Settings_Activity extends AppCompatActivity {
 
         if (getSupportActionBar() != null) getSupportActionBar().hide();
         ScreenUtils.translucent(this);
-        getWindow().getDecorView().setSystemUiVisibility(getWindow().getDecorView().getSystemUiVisibility() | View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+        if (!BaseUtils.isNight(this)) {
+            getWindow().getDecorView().setSystemUiVisibility(getWindow().getDecorView().getSystemUiVisibility() | View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+        }
 
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
         HelperUnit.initTheme(this);
@@ -55,27 +58,27 @@ public class Settings_Activity extends AppCompatActivity {
                 .commit();
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_settings, menu);
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem menuItem) {
-        if (menuItem.getItemId() == android.R.id.home) {
-            finish();
-        } else if (menuItem.getItemId() == R.id.menu_info) {
-//            SpannableString s= new SpannableString(Html.fromHtml(getString(R.string.changelog_dialog),Html.FROM_HTML_MODE_LEGACY));
-//            Linkify.addLinks(s, Linkify.WEB_URLS);
-//            MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
-//            builder.setTitle(getString(R.string.menu_other_info)+"\t V"+ BuildConfig.VERSION_NAME);
-//            builder.setMessage(s);
-//            AlertDialog dialog = builder.create();
-//            dialog.show();
-//            ((TextView) Objects.requireNonNull(dialog.findViewById(android.R.id.message))).setMovementMethod(LinkMovementMethod.getInstance());
-//            Objects.requireNonNull(dialog.getWindow()).setGravity(Gravity.BOTTOM);
-        }
-        return true;
-    }
+//    @Override
+//    public boolean onCreateOptionsMenu(Menu menu) {
+//        getMenuInflater().inflate(R.menu.menu_settings, menu);
+//        return super.onCreateOptionsMenu(menu);
+//    }
+//
+//    @Override
+//    public boolean onOptionsItemSelected(MenuItem menuItem) {
+//        if (menuItem.getItemId() == android.R.id.home) {
+//            finish();
+//        } else if (menuItem.getItemId() == R.id.menu_info) {
+////            SpannableString s= new SpannableString(Html.fromHtml(getString(R.string.changelog_dialog),Html.FROM_HTML_MODE_LEGACY));
+////            Linkify.addLinks(s, Linkify.WEB_URLS);
+////            MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
+////            builder.setTitle(getString(R.string.menu_other_info)+"\t V"+ BuildConfig.VERSION_NAME);
+////            builder.setMessage(s);
+////            AlertDialog dialog = builder.create();
+////            dialog.show();
+////            ((TextView) Objects.requireNonNull(dialog.findViewById(android.R.id.message))).setMovementMethod(LinkMovementMethod.getInstance());
+////            Objects.requireNonNull(dialog.getWindow()).setGravity(Gravity.BOTTOM);
+//        }
+//        return true;
+//    }
 }

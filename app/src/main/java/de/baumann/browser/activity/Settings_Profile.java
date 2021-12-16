@@ -13,6 +13,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
 
+import com.liuzho.lib.baseutils.BaseUtils;
 import com.liuzho.lib.baseutils.ScreenUtils;
 
 import java.util.Objects;
@@ -29,7 +30,9 @@ public class Settings_Profile extends AppCompatActivity {
 
         if (getSupportActionBar() != null) getSupportActionBar().hide();
         ScreenUtils.translucent(this);
-        getWindow().getDecorView().setSystemUiVisibility(getWindow().getDecorView().getSystemUiVisibility() | View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+        if (!BaseUtils.isNight(this)) {
+            getWindow().getDecorView().setSystemUiVisibility(getWindow().getDecorView().getSystemUiVisibility() | View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+        }
 
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
         HelperUnit.initTheme(this);

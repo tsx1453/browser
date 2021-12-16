@@ -3,6 +3,7 @@ package de.baumann.browser.activity;
 import android.os.Bundle;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.liuzho.lib.baseutils.BaseUtils;
 import com.liuzho.lib.baseutils.ScreenUtils;
 
 import androidx.annotation.NonNull;
@@ -48,7 +49,9 @@ public class List_Protected extends AppCompatActivity {
 
         if (getSupportActionBar() != null) getSupportActionBar().hide();
         ScreenUtils.translucent(this);
-        getWindow().getDecorView().setSystemUiVisibility(getWindow().getDecorView().getSystemUiVisibility() | View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+        if (!BaseUtils.isNight(this)) {
+            getWindow().getDecorView().setSystemUiVisibility(getWindow().getDecorView().getSystemUiVisibility() | View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+        }
 
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
         HelperUnit.initTheme(this);
