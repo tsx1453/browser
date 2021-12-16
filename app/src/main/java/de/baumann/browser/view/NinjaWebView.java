@@ -2,7 +2,6 @@ package de.baumann.browser.view;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
-import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -146,7 +145,7 @@ public class NinjaWebView extends WebView implements AlbumController {
         initWebView();
         initAlbum();
 
-        addJavascriptInterface(new JSBridge(this), "extra");
+        addJavascriptInterface(new DefaultHomePageJsBridge(this), "extra");
     }
 
     private synchronized void initWebView() {

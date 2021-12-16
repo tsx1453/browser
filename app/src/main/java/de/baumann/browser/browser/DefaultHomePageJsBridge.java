@@ -6,6 +6,7 @@ import android.os.Looper;
 import android.webkit.JavascriptInterface;
 
 import java.net.URI;
+import java.net.URLEncoder;
 import java.util.List;
 
 import de.baumann.browser.Browser;
@@ -14,11 +15,11 @@ import de.baumann.browser.database.Record;
 import de.baumann.browser.database.RecordAction;
 import de.baumann.browser.view.NinjaWebView;
 
-public class JSBridge {
+public class DefaultHomePageJsBridge {
     private final NinjaWebView mWebView;
     private final Handler mHandler = new Handler(Looper.getMainLooper());
 
-    public JSBridge(NinjaWebView mWebView) {
+    public DefaultHomePageJsBridge(NinjaWebView mWebView) {
         this.mWebView = mWebView;
     }
 
@@ -40,7 +41,7 @@ public class JSBridge {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            addHomeItems(record.getTitle(), Constant.CUSTOM_FAVICON_HOST + "://" + host, record.getURL());
+            addHomeItems(record.getTitle(), Constant.CUSTOM_FAVICON_HOST + "://" + host + "?title=" + URLEncoder.encode(record.getTitle()), record.getURL());
         }
         action.close();
     }
