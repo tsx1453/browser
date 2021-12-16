@@ -29,6 +29,7 @@ public class SP {
     }
 
     private static final String KEY_FAVORITE_URL = "favoriteURL";
+    private static final String KEY_IS_FIRST_LAUNCH = "isFirstLaunch";
 
     public String getFavoriteUrl() {
         String defaultFavoriteUrlFromConfig = Browser.getConfig().getDefaultHomePage();
@@ -38,5 +39,18 @@ public class SP {
 
     public void setFavoriteUrl(String favoriteUrl) {
         sharedPreferences.edit().putString(KEY_FAVORITE_URL, favoriteUrl).apply();
+    }
+
+    public boolean isFirstLaunch() {
+        boolean result = sharedPreferences.getBoolean(KEY_IS_FIRST_LAUNCH, true);
+        sharedPreferences.edit().putBoolean(KEY_IS_FIRST_LAUNCH, false).apply();
+        return result;
+    }
+
+    public int getAndIncreaseCounter() {
+        int counter = sharedPreferences.getInt("counter", 0);
+        counter = counter + 1;
+        sharedPreferences.edit().putInt("counter", counter).apply();
+        return counter;
     }
 }

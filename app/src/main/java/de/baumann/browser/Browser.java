@@ -3,15 +3,17 @@ package de.baumann.browser;
 import android.content.Context;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import com.liuzho.lib.baseutils.theme.ThemeHandler;
+
+import de.baumann.browser.utils.DefaultHomeEntranceHelper;
 
 public class Browser {
     private static Config mConfig;
 
     public static void init(@NonNull Config config) {
         mConfig = config;
+        DefaultHomeEntranceHelper.insertDefaultHomeEntrance();
     }
 
     @NonNull

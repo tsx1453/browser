@@ -44,6 +44,7 @@ import de.baumann.browser.database.RecordAction;
 import de.baumann.browser.unit.BrowserUnit;
 import de.baumann.browser.unit.HelperUnit;
 import de.baumann.browser.unit.RecordUnit;
+import de.baumann.browser.utils.FaviconLoadHelper;
 import de.baumann.browser.view.NinjaWebView;
 
 public class NinjaWebViewClient extends WebViewClient {
@@ -508,14 +509,16 @@ public class NinjaWebViewClient extends WebViewClient {
             );
         }
         if (Constant.CUSTOM_FAVICON_HOST.equals(request.getUrl().getScheme())) {
-            Bitmap f = new FaviconHelper(Browser.getConfig().context).getFavicon(request.getUrl().toString());
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            f.compress(Bitmap.CompressFormat.PNG, 100, baos);
-            return new WebResourceResponse(
-                    "image/png",
-                    "UTF-8",
-                    new ByteArrayInputStream(baos.toByteArray())
-            );
+            Bitmap favicon = FaviconLoadHelper.loadFavicon(request.getUrl().toString());
+            if (favicon != null) {
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                favicon.compress(Bitmap.CompressFormat.PNG, 100, baos);
+                return new WebResourceResponse(
+                        "image/png",
+                        "UTF-8",
+                        new ByteArrayInputStream(baos.toByteArray())
+                );
+            }
         }
         return super.shouldInterceptRequest(view, request);
     }
