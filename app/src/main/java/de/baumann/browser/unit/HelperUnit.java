@@ -61,6 +61,7 @@ import java.util.Locale;
 import java.util.Objects;
 
 import de.baumann.browser.R;
+import de.baumann.browser.activity.BrowserActivity;
 import de.baumann.browser.browser.DataURIParser;
 import de.baumann.browser.view.GridItem;
 import de.baumann.browser.view.NinjaToast;
@@ -245,7 +246,7 @@ public class HelperUnit {
                 context.setTheme(R.style.AppTheme_OLED);
                 break;
             default:
-                context.setTheme(R.style.AppTheme);
+                context.setTheme(R.style.BrowserTheme);
                 break;
         }
     }
@@ -382,27 +383,30 @@ public class HelperUnit {
         Objects.requireNonNull(dialog.getWindow()).setGravity(Gravity.BOTTOM);
     }
 
-    public static void triggerRebirth(Context context) {
-        sp = PreferenceManager.getDefaultSharedPreferences(context);
+    public static void triggerRebirth(Activity activity) {
+        sp = PreferenceManager.getDefaultSharedPreferences(activity);
         sp.edit().putInt("restart_changed", 0).apply();
         sp.edit().putBoolean("restoreOnRestart", true).apply();
 
-        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(activity);
         builder.setTitle(R.string.menu_restart);
         builder.setIcon(R.drawable.icon_alert);
         builder.setMessage(R.string.toast_restart);
         builder.setPositiveButton(R.string.app_ok, (dialog, whichButton) -> {
-            PackageManager packageManager = context.getPackageManager();
-            Intent intent = packageManager.getLaunchIntentForPackage(context.getPackageName());
-            assert intent != null;
-            ComponentName componentName = intent.getComponent();
-            Intent mainIntent = Intent.makeRestartActivityTask(componentName);
-            context.startActivity(mainIntent);
-            System.exit(0);
+            activity.recreate();
+//            activity.finish();
+//            activity.startActivity(new Intent(activity, BrowserActivity.class));
+//            PackageManager packageManager = context.getPackageManager();
+//            Intent intent = packageManager.getLaunchIntentForPackage(context.getPackageName());
+//            assert intent != null;
+//            ComponentName componentName = intent.getComponent();
+//            Intent mainIntent = Intent.makeRestartActivityTask(componentName);
+//            context.startActivity(mainIntent);
+//            System.exit(0);
         });
         builder.setNegativeButton(R.string.app_cancel, (dialog, whichButton) -> dialog.cancel());
         AlertDialog dialog = builder.create();
         dialog.show();
-        HelperUnit.setupDialog(context, dialog);
+        HelperUnit.setupDialog(activity, dialog);
     }
 }

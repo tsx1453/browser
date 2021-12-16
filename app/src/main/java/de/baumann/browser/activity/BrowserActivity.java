@@ -26,6 +26,9 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.Rect;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.InsetDrawable;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
@@ -78,6 +81,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.PopupMenu;
+import androidx.appcompat.widget.ThemeUtils;
 import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -91,11 +95,15 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.color.DynamicColors;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.dialog.MaterialDialogs;
 import com.google.android.material.navigation.NavigationBarView;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.textfield.TextInputLayout;
+import com.liuzho.lib.baseutils.BaseUtils;
 import com.liuzho.lib.baseutils.ScreenUtils;
+import com.liuzho.lib.baseutils.theme.ThemeHandler;
+import com.liuzho.lib.baseutils.theme.ThemeHelper;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -103,6 +111,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 
+import de.baumann.browser.Browser;
 import de.baumann.browser.R;
 import de.baumann.browser.browser.AdBlock;
 import de.baumann.browser.browser.AlbumController;
@@ -232,14 +241,16 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
         Window window = this.getWindow();
 //        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
         ScreenUtils.translucent(this);
-        window.getDecorView().setSystemUiVisibility(window.getDecorView().getSystemUiVisibility() | View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+        if (!BaseUtils.isNight(context)) {
+            window.getDecorView().setSystemUiVisibility(window.getDecorView().getSystemUiVisibility() | View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+        }
 //        window.setStatusBarColor(ContextCompat.getColor(this, R.color.md_theme_light_onBackground));
         if (sp.getBoolean("sp_screenOn", false))
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         HelperUnit.initTheme(context);
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
-        DynamicColors.applyToActivitiesIfAvailable(activity.getApplication());
+//        DynamicColors.applyToActivitiesIfAvailable(activity.getApplication());
 
         OrientationEventListener mOrientationListener = new OrientationEventListener(getApplicationContext()) {
             @Override
@@ -428,7 +439,7 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
         }
         BrowserContainer.clear();
 
-        if (!sp.getBoolean("sp_reloadTabs", false) || sp.getInt("restart_changed", 1) == 1) {
+        if (!sp.getBoolean("restoreOnRestart", false) && (!sp.getBoolean("sp_reloadTabs", false) || sp.getInt("restart_changed", 1) == 1)) {
             sp.edit().putString("openTabs", "").apply();   //clear open tabs in preferences
             sp.edit().putString("openTabsProfile", "").apply();
         }
@@ -1470,27 +1481,26 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
             } else {
                 omniBox_text.setText(ninjaWebView.getTitle());
             }
-            if (url.startsWith("https://")) {
-                omniBox_flavor.setOnClickListener(v -> show_dialogFastToggle());
-            } else if (url.isEmpty()) {
-                omniBox_flavor.setOnClickListener(v -> show_dialogFastToggle());
+            if (url.isEmpty()) {
                 omniBox_text.setText("");
-            } else {
-                omniBox_flavor.setOnClickListener(v -> {
-                    MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
-                    builder.setIcon(R.drawable.icon_alert);
-                    builder.setTitle(R.string.app_warning);
-                    builder.setMessage(R.string.toast_unsecured);
-                    builder.setPositiveButton(R.string.app_ok, (dialog, whichButton) -> ninjaWebView.loadUrl(url.replace("http://", "https://")));
-                    builder.setNegativeButton(R.string.app_cancel, (dialog, whichButton) -> {
-                        dialog.cancel();
-                        omniBox_flavor.setOnClickListener(v2 -> show_dialogFastToggle());
-                    });
-                    AlertDialog dialog = builder.create();
-                    dialog.show();
-                    HelperUnit.setupDialog(context, dialog);
-                });
             }
+            omniBox_flavor.setOnClickListener(v -> show_dialogFastToggle());
+//            else {
+//                omniBox_flavor.setOnClickListener(v -> {
+//                    MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
+//                    builder.setIcon(R.drawable.icon_alert);
+//                    builder.setTitle(R.string.app_warning);
+//                    builder.setMessage(R.string.toast_unsecured);
+//                    builder.setPositiveButton(R.string.app_ok, (dialog, whichButton) -> ninjaWebView.loadUrl(url.replace("http://", "https://")));
+//                    builder.setNegativeButton(R.string.app_cancel, (dialog, whichButton) -> {
+//                        dialog.cancel();
+//                        omniBox_flavor.setOnClickListener(v2 -> show_dialogFastToggle());
+//                    });
+//                    AlertDialog dialog = builder.create();
+//                    dialog.show();
+//                    HelperUnit.setupDialog(context, dialog);
+//                });
+//            }
         }
     }
 
@@ -1499,7 +1509,7 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
         super.onConfigurationChanged(newConfig);
         if (!orientationChanged) {
             saveOpenedTabs();
-            HelperUnit.triggerRebirth(context);
+            HelperUnit.triggerRebirth(this);
         } else {
             orientationChanged = false;
         }
@@ -1979,7 +1989,7 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
                 startActivity(settings);
             } else if (position == 5) {
                 saveOpenedTabs();
-                HelperUnit.triggerRebirth(context);
+                HelperUnit.triggerRebirth(this);
             }
         });
 
