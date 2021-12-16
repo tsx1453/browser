@@ -1745,23 +1745,24 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
     }
 
     private void doubleTapsQuit() {
-        if (!sp.getBoolean("sp_close_browser_confirm", true)) {
-            finish();
-        } else {
-            MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
-            builder.setTitle(R.string.setting_title_confirm_exit);
-            builder.setIcon(R.drawable.icon_alert);
-            builder.setMessage(R.string.toast_quit);
-            builder.setPositiveButton(R.string.app_ok, (dialog, whichButton) -> {
-                //FaviconHelper db=new FaviconHelper(context);
-                //db.cleanUpFaviconDB(context);
-                finish();
-            });
-            builder.setNegativeButton(R.string.app_cancel, (dialog, whichButton) -> dialog.cancel());
-            AlertDialog dialog = builder.create();
-            dialog.show();
-            HelperUnit.setupDialog(context, dialog);
-        }
+//        if (!sp.getBoolean("sp_close_browser_confirm", true)) {
+//            finish();
+//        } else {
+//            MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
+//            builder.setTitle(R.string.setting_title_confirm_exit);
+//            builder.setIcon(R.drawable.icon_alert);
+//            builder.setMessage(R.string.toast_quit);
+//            builder.setPositiveButton(R.string.app_ok, (dialog, whichButton) -> {
+//                //FaviconHelper db=new FaviconHelper(context);
+//                //db.cleanUpFaviconDB(context);
+//                finish();
+//            });
+//            builder.setNegativeButton(R.string.app_cancel, (dialog, whichButton) -> dialog.cancel());
+//            AlertDialog dialog = builder.create();
+//            dialog.show();
+//            HelperUnit.setupDialog(context, dialog);
+//        }
+        finish();
     }
 
     @SuppressLint("ClickableViewAccessibility")
