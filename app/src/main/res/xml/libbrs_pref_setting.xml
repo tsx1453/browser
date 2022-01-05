@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory
+        android:title="@string/libbrs_setting_title_browser"
+        app:initialExpandedChildrenCount="4">
+
+        <Preference
+            android:fragment="com.liuzho.browser.fragment.PrivacySettingsFragment"
+            android:title="@string/libbrs_setting_title_profiles_privacy" />
+
+        <Preference
+            android:fragment="com.liuzho.browser.fragment.CleanSettingsFragment"
+            android:title="@string/libbrs_menu_delete" />
+
+        <EditTextPreference
+            android:key="@string/libbrs_spkey_favorite_url"
+            android:title="@string/libbrs_pref_title_start_page"
+            app:useSimpleSummaryProvider="true" />
+
+        <ListPreference
+            android:defaultValue="0"
+            android:entries="@array/libbrs_setting_entries_search_engine"
+            android:entryValues="@array/libbrs_setting_values_search_engine"
+            android:key="@string/libbrs_spkey_search_engine"
+            android:title="@string/libbrs_setting_title_search_engine"
+            app:useSimpleSummaryProvider="true" />
+
+        <com.liuzho.browser.preferences.EditTextSwitchPreference
+            android:key="@string/libbrs_spkey_custom_search_engine"
+            android:selectable="true"
+            android:title="@string/libbrs_setting_title_searchEngine"
+            app:editTextSwitchKey="@string/libbrs_spkey_custom_search_engine_switch"
+            app:useSimpleSummaryProvider="true" />
+
+        <com.liuzho.browser.preferences.EditTextSwitchPreference
+            android:key="@string/libbrs_spkey_custom_user_agent"
+            android:selectable="true"
+            android:title="@string/libbrs_setting_title_userAgent"
+            app:editTextSwitchKey="@string/libbrs_spkey_user_agent_switch"
+            app:useSimpleSummaryProvider="true" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/libbrs_setting_title_app">
+
+        <Preference
+            android:fragment="com.liuzho.browser.fragment.UiSettingsFragment"
+            android:title="@string/libbrs_setting_title_ui" />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

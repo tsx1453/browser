@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="libbrs_spkey_keep_screen_on">keep_screen_on</string>
+    <string name="libbrs_spkey_start_tab">start_tab</string>
+    <string name="libbrs_spkey_profile_to_start">profile_to_start</string>
+    <string name="libbrs_spkey_auto_fill">auto_fill</string>
+    <string name="libbrs_spkey_restore_tabs">restore_tabs</string>
+    <string name="libbrs_spkey_reload_tabs">reload_tabs</string>
+    <string name="libbrs_spkey_clear_when_quit">clear_when_quit</string>
+    <string name="libbrs_spkey_clear_cache">clear_cache</string>
+    <string name="libbrs_spkey_clear_history">clear_history</string>
+    <string name="libbrs_spkey_clear_cookie">clear_cookie</string>
+    <string name="libbrs_spkey_clear_indexed_db">clear_indexed_db</string>
+    <string name="libbrs_spkey_swipe_to_reload">swipe_to_reload</string>
+    <string name="libbrs_spkey_confirm_close_tab">confirm_close_tab</string>
+    <string name="libbrs_spkey_font_zoom">font_zoom</string>
+    <string name="libbrs_spkey_user_agent_switch">user_agent_switch</string>
+    <string name="libbrs_spkey_custom_user_agent">custom_user_agent</string>
+    <string name="libbrs_spkey_js_page_finished">js_page_finished</string>
+    <string name="libbrs_spkey_js_page_finished_switch">js_page_finished_switch</string>
+    <string name="libbrs_spkey_js_page_started">js_page_started</string>
+    <string name="libbrs_spkey_js_page_started_switch">js_page_started_switch</string>
+    <string name="libbrs_spkey_js_page_load_resource_switch">js_page_load_resource_switch</string>
+    <string name="libbrs_spkey_js_page_load_resource">js_page_load_resource</string>
+    <string name="libbrs_spkey_ad_hosts">ad_hosts</string>
+    <string name="libbrs_spkey_custom_search_engine">custom_search_engine</string>
+    <string name="libbrs_spkey_custom_search_engine_switch">custom_search_engine_switch</string>
+    <string name="libbrs_spkey_search_engine">search_engine</string>
+    <string name="libbrs_spkey_favorite_url">favorite_url</string>
+
+    <bool name="libbrs_spval_clear_when_quit">true</bool>
+    <bool name="libbrs_spval_clear_cache">true</bool>
+    <bool name="libbrs_spval_clear_cookie">false</bool>
+    <bool name="libbrs_spval_clear_history">false</bool>
+    <bool name="libbrs_spval_clear_indexed_db">false</bool>
+    <bool name="libbrs_spval_confirm_close_tab">false</bool>
+</resources>

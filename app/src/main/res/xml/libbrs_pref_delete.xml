@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <CheckBoxPreference
+        android:defaultValue="@bool/libbrs_spval_clear_when_quit"
+        android:key="@string/libbrs_spkey_clear_when_quit"
+        android:title="@string/libbrs_clear_title_quit" />
+
+    <CheckBoxPreference
+        android:defaultValue="@bool/libbrs_spval_clear_indexed_db"
+        android:key="@string/libbrs_spkey_clear_indexed_db"
+        android:title="@string/libbrs_localData" />
+
+    <CheckBoxPreference
+        android:defaultValue="@bool/libbrs_spval_clear_cache"
+        android:key="@string/libbrs_spkey_clear_cache"
+        android:title="@string/libbrs_clear_title_cache" />
+
+    <CheckBoxPreference
+        android:defaultValue="@bool/libbrs_spval_clear_history"
+        android:key="@string/libbrs_spkey_clear_history"
+        android:title="@string/libbrs_clear_title_history" />
+
+    <CheckBoxPreference
+        android:defaultValue="@bool/libbrs_spval_clear_cookie"
+        android:key="@string/libbrs_spkey_clear_cookie"
+        android:summary="@string/libbrs_setting_summary_cookie_delete"
+        android:title="@string/libbrs_clear_title_cookie" />
+
+    <Preference
+        android:key="sp_deleteDatabase"
+        android:summary="@string/libbrs_clear_summary_deleteDatabase"
+        android:title="@string/libbrs_clear_title_deleteDatabase" />
+
+</PreferenceScreen>

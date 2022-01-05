@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory android:title="@string/libbrs_setting_title_behavior">
+
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="@string/libbrs_spkey_swipe_to_reload"
+            android:title="@string/libbrs_setting_title_reload" />
+
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="@string/libbrs_spkey_keep_screen_on"
+            android:title="@string/libbrs_setting_title_screenOn" />
+
+        <CheckBoxPreference
+            android:defaultValue="@bool/libbrs_spval_confirm_close_tab"
+            android:key="@string/libbrs_spkey_confirm_close_tab"
+            android:title="@string/libbrs_setting_title_confirm_tab_close" />
+
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="@string/libbrs_spkey_reload_tabs"
+            android:summary="@string/libbrs_setting_summary_tabsReload"
+            android:title="@string/libbrs_setting_title_tabsReload" />
+
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="@string/libbrs_spkey_restore_tabs"
+            android:summary="@string/libbrs_setting_summary_tabsRestore"
+            android:title="@string/libbrs_setting_title_tabsRestore" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/libbrs_setting_title_userInterface">
+
+
+        <ListPreference
+            android:defaultValue="100"
+            android:entries="@array/libbrs_setting_entries_font"
+            android:entryValues="@array/libbrs_setting_values_font"
+            android:key="sp_fontSize"
+            android:title="@string/libbrs_setting_title_font" />
+
+        <com.liuzho.browser.preferences.ListSwitchPreference
+            android:defaultValue="3"
+            android:entries="@array/libbrs_setting_entries_tab"
+            android:entryValues="@array/libbrs_setting_values_tab"
+            android:key="@string/libbrs_spkey_start_tab"
+            android:selectable="true"
+            android:title="@string/libbrs_setting_overView_onStart_title"
+            app:isPreferenceVisible="false"
+            app:listSwitchKey="start_tabStart"
+            app:listSwitchKeyDefaultValue="false"
+            app:useSimpleSummaryProvider="true" />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--所有key务必确保和BrowserPref.Profile.VAL、ProfileConfig内值保持一致-->
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    
+    <PreferenceCategory android:title="@string/libbrs_setting_title_profiles_dataUsage">
+
+        <CheckBoxPreference
+            android:key="profile_trusted_images"
+            android:defaultValue="true"
+            android:title="@string/libbrs_setting_title_images"
+            android:icon="@drawable/libbrs_icon_image"/>
+
+        <CheckBoxPreference
+            android:key="profile_trusted_adBlock"
+            android:defaultValue="true"
+            android:title="@string/libbrs_setting_title_adblock"
+            android:icon="@drawable/libbrs_icon_adblock"/>
+
+        <CheckBoxPreference
+            android:key="profile_trusted_saveData"
+            android:defaultValue="true"
+            android:title="@string/libbrs_setting_title_save_data"
+            android:icon="@drawable/libbrs_icon_savedata"/>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/libbrs_setting_title_profiles_privacy">
+
+        <CheckBoxPreference
+            android:key="profile_trusted_location"
+            android:defaultValue="false"
+            android:title="@string/libbrs_setting_title_location"
+            android:icon="@drawable/libbrs_icon_location"/>
+
+        <CheckBoxPreference
+            android:key="profile_trusted_camera"
+            android:defaultValue="false"
+            android:title="@string/libbrs_setting_title_camera"
+            android:icon="@drawable/libbrs_icon_camera"/>
+
+        <CheckBoxPreference
+            android:key="profile_trusted_microphone"
+            android:defaultValue="false"
+            android:title="@string/libbrs_setting_title_microphone"
+            android:icon="@drawable/libbrs_icon_microphone"/>
+
+        <CheckBoxPreference
+            android:key="profile_trusted_saveHistory"
+            android:defaultValue="true"
+            android:title="@string/libbrs_setting_title_history"
+            android:icon="@drawable/libbrs_icon_history"/>
+
+        <CheckBoxPreference
+            android:key="profile_trusted_fingerPrintProtection"
+            android:defaultValue="false"
+            android:title="@string/libbrs_setting_title_fingerPrint"
+            android:icon="@drawable/libbrs_icon_fingerprint"/>
+
+        <CheckBoxPreference
+            android:key="profile_trusted_cookies"
+            android:defaultValue="true"
+            android:title="@string/libbrs_setting_title_cookie"
+            android:icon="@drawable/libbrs_icon_cookie"/>
+
+        <CheckBoxPreference
+            android:key="profile_trusted_dom"
+            android:defaultValue="true"
+            android:title="@string/libbrs_setting_title_dom"
+            android:icon="@drawable/libbrs_icon_dom"/>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/libbrs_setting_title_profiles_Security">
+
+        <CheckBoxPreference
+            android:key="profile_trusted_javascript"
+            android:defaultValue="true"
+            android:title="@string/libbrs_setting_title_javascript"
+            android:icon="@drawable/libbrs_icon_java"/>
+
+        <CheckBoxPreference
+            android:key="profile_trusted_javascriptPopup"
+            android:defaultValue="true"
+            android:title="@string/libbrs_setting_title_javascript_popUp"
+            android:icon="@drawable/libbrs_icon_popup"/>
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

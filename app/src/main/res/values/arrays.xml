@@ -3,20 +3,17 @@
 <resources>
 
     <!-- Search engine -->
-    <string-array name="setting_entries_search_engine">
-<!--        <item>@string/setting_summary_search_engine_startpage</item>-->
-<!--        <item>@string/setting_summary_search_engine_startpage_de</item>-->
-        <item>@string/setting_summary_search_engine_google</item>
-        <item>@string/setting_summary_search_engine_baidu</item>
-        <item>@string/setting_summary_search_engine_bing</item>
-        <item>@string/setting_summary_search_engine_duckduckgo</item>
-        <item>@string/setting_summary_search_engine_searx</item>
-        <item>@string/setting_summary_search_engine_qwant</item>
-        <item>@string/setting_summary_search_engine_ecosia</item>
-        <item>@string/setting_summary_search_engine_metager</item>
+    <string-array name="libbrs_setting_entries_search_engine">
+        <item>@string/libbrs_setting_summary_search_engine_google</item>
+        <item>@string/libbrs_setting_summary_search_engine_baidu</item>
+        <item>@string/libbrs_setting_summary_search_engine_bing</item>
+        <item>@string/libbrs_setting_summary_search_engine_duckduckgo</item>
+        <item>@string/libbrs_setting_summary_search_engine_searx</item>
+        <item>@string/libbrs_setting_summary_search_engine_qwant</item>
+        <item>@string/libbrs_setting_summary_search_engine_ecosia</item>
+        <item>@string/libbrs_setting_summary_search_engine_metager</item>
     </string-array>
-
-    <string-array name="setting_values_search_engine">
+    <string-array name="libbrs_setting_values_search_engine">
         <item>0</item>
         <item>1</item>
         <item>2</item>
@@ -25,85 +22,24 @@
         <item>5</item>
         <item>6</item>
         <item>7</item>
-<!--        <item>8</item>-->
-<!--        <item>9</item>-->
     </string-array>
-
-    <!-- User agent -->
-
-    <!-- Gestures -->
-    <string-array name="setting_entries_gestures">
-        <item>@string/setting_gesture_01</item>
-        <item>@string/setting_gesture_02</item>
-        <item>@string/setting_gesture_03</item>
-        <item>@string/setting_gesture_04</item>
-        <item>@string/setting_gesture_05</item>
-        <item>@string/setting_gesture_06</item>
-        <item>@string/setting_gesture_07</item>
-        <item>@string/setting_gesture_08</item>
-        <item>@string/setting_gesture_09</item>
-        <item>@string/setting_gesture_10</item>
-        <item>@string/album_title_tab</item>
-        <item>@string/menu_share_link</item>
-        <item>@string/menu_other_searchSite</item>
-        <item>@string/menu_save_bookmark</item>
-        <item>@string/menu_save_home</item>
-        <item>@string/menu_reload</item>
-        <item>@string/menu_openFav</item>
-    </string-array>
-
-    <string-array name="setting_values_gestures">
-        <item>01</item>
-        <item>02</item>
-        <item>03</item>
-        <item>04</item>
-        <item>05</item>
-        <item>06</item>
-        <item>07</item>
-        <item>08</item>
-        <item>09</item>
-        <item>10</item>
-        <item>11</item>
-        <item>12</item>
-        <item>13</item>
-        <item>14</item>
-        <item>15</item>
-        <item>16</item>
-        <item>17</item>
-    </string-array>
+    <!-- Search engine -->
 
     <!-- Start tab -->
-    <string-array name="setting_entries_tab">
-        <item>@string/album_title_home</item>
-        <item>@string/album_title_bookmarks</item>
-        <item>@string/album_title_history</item>
+    <string-array name="libbrs_setting_entries_tab">
+        <item>@string/libbrs_album_title_home</item>
+        <item>@string/libbrs_album_title_bookmarks</item>
+        <item>@string/libbrs_album_title_history</item>
     </string-array>
 
-    <string-array name="setting_values_tab">
+    <string-array name="libbrs_setting_values_tab">
         <item>0</item>
         <item>3</item>
         <item>4</item>
     </string-array>
 
-    <!-- Themes -->
-    <string-array name="setting_entries_theme">
-        <item>@string/setting_theme_system</item>
-        <item>@string/menu_dayView</item>
-        <item>@string/menu_nightView</item>
-        <item>@string/setting_theme_wallpaper</item>
-        <item>@string/setting_theme_OLED</item>
-    </string-array>
-
-    <string-array name="setting_values_theme">
-        <item>1</item>
-        <item>2</item>
-        <item>3</item>
-        <item>4</item>
-        <item>5</item>
-    </string-array>
-
     <!-- Font size -->
-    <string-array name="setting_entries_font">
+    <string-array name="libbrs_setting_entries_font">
         <item>75</item>
         <item>90</item>
         <item>100</item>
@@ -113,7 +49,7 @@
         <item>175</item>
     </string-array>
 
-    <string-array name="setting_values_font">
+    <string-array name="libbrs_setting_values_font">
         <item>75</item>
         <item>90</item>
         <item>100</item>
@@ -123,12 +59,9 @@
         <item>175</item>
     </string-array>
 
-    <!-- Backup -->
-
-    <!-- Restore -->
 
     <!-- Start tab -->
-    <string-array name="setting_entries_adBlock">
+    <string-array name="libbrs_setting_entries_adBlock">
         <item>UH = (adware + malware)</item>
         <item>UH + fakenews</item>
         <item>UH + gambling</item>
@@ -147,7 +80,7 @@
         <item>UH + fakenews + gambling + porn + social</item>
     </string-array>
 
-    <string-array name="setting_values_adBlock">
+    <string-array name="libbrs_setting_values_adBlock">
         <item>https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts</item>
         <item>https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/fakenews/hosts</item>
         <item>https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/gambling/hosts</item>
@@ -166,18 +99,19 @@
         <item>https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/fakenews-gambling-porn-social/hosts</item>
     </string-array>
 
-    <string-array name="profileToStart_entries">
-        <item>@string/setting_title_profiles_trusted</item>
-        <item>@string/setting_title_profiles_standard</item>
-        <item>@string/setting_title_profiles_protected</item>
-        <item>@string/setting_title_profiles_changed</item>
+    <string-array name="libbrs_profileToStart_entries">
+        <item>@string/libbrs_setting_title_profiles_trusted</item>
+        <item>@string/libbrs_setting_title_profiles_standard</item>
+        <item>@string/libbrs_setting_title_profiles_protected</item>
+        <item>@string/libbrs_setting_title_profiles_changed</item>
     </string-array>
 
-    <string-array name="profileToStart_values">
-        <item>profileTrusted</item>
-        <item>profileStandard</item>
-        <item>profileProtected</item>
-        <item>profileChanged</item>
+    <!--务必确保与BrowserPref.Profile内值一致-->
+    <string-array name="libbrs_profileToStart_values">
+        <item>profile_trusted</item>
+        <item>profile_standard</item>
+        <item>profile_protected</item>
+        <item>profile_custom</item>
     </string-array>
 
 </resources>

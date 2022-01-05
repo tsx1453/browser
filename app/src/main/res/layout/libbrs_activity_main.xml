@@ -1,0 +1,150 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:animateLayoutChanges="true"
+    android:fitsSystemWindows="true"
+    android:orientation="vertical"
+    tools:ignore="ContentDescription">
+
+    <RelativeLayout
+        android:id="@+id/omniBox"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:layout_gravity="top|center"
+        android:background="?attr/libbrs_toolbar_color"
+        android:elevation="?attr/libbrs_toolbar_elevation">
+
+        <ImageButton
+            android:id="@+id/omniBox_flavor"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:layout_gravity="center_vertical|center_horizontal"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            android:background="?attr/actionBarItemBackground"
+            android:scaleX="1.0"
+            android:scaleY="1.0"
+            android:src="@drawable/libbrs_icon_profile_standard" />
+
+        <ImageButton
+            android:id="@+id/omnibox_overflow"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="15dp"
+            android:background="?attr/actionBarItemBackground"
+            android:scaleX="1.0"
+            android:scaleY="1.0"
+            android:src="@drawable/libbrs_icon_overflow" />
+
+        <ImageButton
+            android:id="@+id/omnibox_overview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            android:layout_toStartOf="@id/omnibox_overflow"
+            android:background="?attr/actionBarItemBackground"
+            android:src="@drawable/libbrs_browser_icon_tab" />
+
+        <com.google.android.material.textfield.MaterialAutoCompleteTextView
+            android:id="@+id/omniBox_input"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_centerInParent="true"
+            android:layout_marginStart="5dp"
+            android:layout_marginEnd="5dp"
+            android:layout_toStartOf="@id/omnibox_overview"
+            android:layout_toEndOf="@id/omniBox_flavor"
+            android:background="@android:color/transparent"
+            android:completionThreshold="1"
+            android:dropDownAnchor="@id/omniBox_input"
+            android:hint="@string/libbrs_main_omnibox_input_hint"
+            android:imeOptions="actionGo"
+            android:inputType="textUri"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:textAppearance="?attr/textAppearanceTitleMedium"
+            android:textStyle="bold" />
+
+    </RelativeLayout>
+
+    <com.google.android.material.progressindicator.LinearProgressIndicator
+        android:id="@+id/main_progress_bar"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        app:indicatorColor="?attr/colorSecondary"
+        app:indicatorDirectionLinear="startToEnd" />
+
+    <FrameLayout
+        android:id="@+id/main_content"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <RelativeLayout
+        android:id="@+id/searchBox"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/libbrs_toolbar_color"
+        android:elevation="8dp">
+
+        <ImageButton
+            android:id="@+id/searchBox_cancel"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_alignParentEnd="true"
+            android:layout_gravity="center"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="16dp"
+            android:background="?attr/actionBarItemBackground"
+            android:src="@drawable/libbrs_icon_close" />
+
+        <ImageButton
+            android:id="@+id/searchBox_down"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_toStartOf="@id/searchBox_cancel"
+            android:background="?attr/actionBarItemBackground"
+            android:src="@drawable/libbrs_icon_arrow_down_gest" />
+
+        <ImageButton
+            android:id="@+id/searchBox_up"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_toStartOf="@id/searchBox_down"
+            android:background="?attr/actionBarItemBackground"
+            android:src="@drawable/libbrs_icon_arrow_up_gest" />
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/searchBox_input"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_centerInParent="true"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_toStartOf="@id/searchBox_up"
+            android:background="@android:color/transparent"
+            android:ellipsize="start"
+            android:hint="@string/libbrs_search_hint"
+            android:imeOptions="actionDone"
+            android:inputType="textAutoCorrect"
+            android:singleLine="true"
+            android:textAppearance="?attr/textAppearanceBody1" />
+
+    </RelativeLayout>
+
+</LinearLayout>

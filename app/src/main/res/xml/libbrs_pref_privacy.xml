@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <CheckBoxPreference
+        android:defaultValue="true"
+        android:key="@string/libbrs_spkey_auto_fill"
+        android:summary="@string/libbrs_setting_summary_autofill"
+        android:title="@string/libbrs_setting_title_autofill" />
+
+    <PreferenceCategory android:title="@string/libbrs_setting_title_profiles">
+
+        <ListPreference
+            android:entries="@array/libbrs_profileToStart_entries"
+            android:entryValues="@array/libbrs_profileToStart_values"
+            android:key="@string/libbrs_spkey_profile_to_start"
+            android:title="@string/libbrs_setting_title_profiles_startApp"
+            app:useSimpleSummaryProvider="true" />
+
+        <Preference
+            android:key="settings_profile"
+            android:title="@string/libbrs_setting_title_profiles_edit" />
+
+        <Preference
+            android:fragment="com.liuzho.browser.fragment.sitelist.TrustedListFragment"
+            android:icon="@drawable/libbrs_icon_profile_trusted"
+            android:title="@string/libbrs_setting_title_profiles_trustedList" />
+
+        <Preference
+            android:fragment="com.liuzho.browser.fragment.sitelist.StandardListFragment"
+            android:icon="@drawable/libbrs_icon_profile_standard"
+            android:title="@string/libbrs_setting_title_profiles_standardList" />
+
+        <Preference
+            android:fragment="com.liuzho.browser.fragment.sitelist.ProtectedListFragment"
+            android:icon="@drawable/libbrs_icon_profile_protected"
+            android:title="@string/libbrs_setting_title_profiles_protectedList" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/libbrs_setting_title_adblock">
+
+        <Preference
+            android:key="sp_ad_block"
+            android:summary="@string/libbrs_setting_summary_adblock" />
+
+        <!--            todo replace it default value-->
+        <ListPreference
+            android:defaultValue="https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts"
+            android:entries="@array/libbrs_setting_entries_adBlock"
+            android:entryValues="@array/libbrs_setting_values_adBlock"
+            android:key="@string/libbrs_spkey_ad_hosts"
+            android:title="@string/libbrs_setting_title_adblockHost" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/libbrs_setting_userScript">
+
+        <com.liuzho.browser.preferences.EditTextSwitchPreference
+            android:key="@string/libbrs_spkey_js_page_started"
+            android:selectable="true"
+            android:title="onPageStarted"
+            app:editTextSwitchKey="@string/libbrs_spkey_js_page_started_switch"
+            app:useSimpleSummaryProvider="true" />
+
+        <com.liuzho.browser.preferences.EditTextSwitchPreference
+            android:key="@string/libbrs_spkey_js_page_finished"
+            android:selectable="true"
+            android:title="onPageFinished"
+            app:editTextSwitchKey="@string/libbrs_spkey_js_page_finished_switch"
+            app:useSimpleSummaryProvider="true" />
+
+        <com.liuzho.browser.preferences.EditTextSwitchPreference
+            android:key="@string/libbrs_spkey_js_page_load_resource"
+            android:selectable="true"
+            android:title="onLoadResource"
+            app:editTextSwitchKey="@string/libbrs_spkey_js_page_load_resource_switch"
+            app:useSimpleSummaryProvider="true" />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>
