@@ -8,9 +8,10 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.util.List;
-
 import com.liuzho.browser.R;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class GridAdapter extends BaseAdapter {
     private static class Holder {
@@ -18,13 +19,13 @@ public class GridAdapter extends BaseAdapter {
         ImageView icon;
     }
 
-    private final List<GridItem> list;
+    private final List<GridItem> list = new ArrayList<>();
 
     private final Context context;
 
     public GridAdapter(Context context, List<GridItem> list) {
         this.context = context;
-        this.list = list;
+        this.list.addAll(list);
     }
 
     @Override
@@ -45,7 +46,7 @@ public class GridAdapter extends BaseAdapter {
         GridItem item = list.get(position);
         holder.title.setText(item.getTitle());
         holder.icon.setImageResource(item.getIcon());
-        if (item.getIcon()!=0) holder.icon.setVisibility(View.VISIBLE);
+        if (item.getIcon() != 0) holder.icon.setVisibility(View.VISIBLE);
 
         return view;
     }
@@ -64,5 +65,11 @@ public class GridAdapter extends BaseAdapter {
     @Override
     public long getItemId(int arg0) {
         return arg0;
+    }
+
+    public void refresh(List<GridItem> newList) {
+        list.clear();
+        list.addAll(newList);
+        notifyDataSetChanged();
     }
 }

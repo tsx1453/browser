@@ -302,4 +302,12 @@ public class HelperUnit {
                 .show();
         HelperUnit.setupDialog(activity, dialog);
     }
+
+    public static void shareLink(Context context, String title, String url) {
+        Intent sharingIntent = new Intent(Intent.ACTION_SEND);
+        sharingIntent.setType("text/plain");
+        sharingIntent.putExtra(Intent.EXTRA_SUBJECT, title);
+        sharingIntent.putExtra(Intent.EXTRA_TEXT, url);
+        context.startActivity(Intent.createChooser(sharingIntent, context.getString(R.string.libbrs_menu_share_link)));
+    }
 }

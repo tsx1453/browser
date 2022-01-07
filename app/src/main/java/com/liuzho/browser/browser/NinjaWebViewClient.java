@@ -572,8 +572,6 @@ public class NinjaWebViewClient extends WebViewClient {
         TextInputLayout edit_title_layout = dialogView.findViewById(R.id.edit_title_layout);
         TextInputLayout edit_userName_layout = dialogView.findViewById(R.id.edit_userName_layout);
         TextInputLayout edit_PW_layout = dialogView.findViewById(R.id.edit_PW_layout);
-        ImageView ib_icon = dialogView.findViewById(R.id.edit_icon);
-        ib_icon.setVisibility(View.GONE);
         edit_title_layout.setVisibility(View.GONE);
         edit_userName_layout.setVisibility(View.VISIBLE);
         edit_PW_layout.setVisibility(View.VISIBLE);

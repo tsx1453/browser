@@ -27,7 +27,7 @@
     <string name="libbrs_menu_sc">添加到桌面</string>
     <string name="libbrs_menu_filter">按…过滤</string>
     <string name="libbrs_menu_share_link">分享链接</string>
-    <string name="libbrs_menu_save_home">保存到桌面</string>
+    <string name="libbrs_menu_save_home">保存到首页</string>
     <string name="libbrs_menu_save_bookmark">保存为书签</string>
     <string name="libbrs_menu_save_as">另存为…</string>
     <string name="libbrs_menu_save_pdf">保存为 PDF</string>

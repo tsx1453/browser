@@ -76,7 +76,6 @@ public class BrowserPref {
         preferences = context.getSharedPreferences(SP_NAME, Context.MODE_PRIVATE);
     }
 
-    private static final String KEY_IS_FIRST_LAUNCH = "isFirstLaunch";
 
     public String getFavoriteUrl() {
         return preferences.getString(KEY_FAVORITE_URL, BrowserConstant.DEFAULT_FAVORITE_URL);
@@ -86,11 +85,6 @@ public class BrowserPref {
         preferences.edit().putString(KEY_FAVORITE_URL, favoriteUrl).apply();
     }
 
-    public boolean isFirstLaunch() {
-        boolean result = preferences.getBoolean(KEY_IS_FIRST_LAUNCH, true);
-        preferences.edit().putBoolean(KEY_IS_FIRST_LAUNCH, false).apply();
-        return result;
-    }
 
     public int getAndIncreaseCounter() {
         int counter = preferences.getInt("counter", 0);

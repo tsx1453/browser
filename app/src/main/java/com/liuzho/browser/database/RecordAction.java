@@ -153,8 +153,9 @@ public class RecordAction {
         cursor.moveToFirst();
         while (!cursor.isAfterLast()) {
             if (filter) {
-                if ((getRecord(cursor, BOOKMARK_ITEM).getIconColor()) == filterBy) {
-                    list.add(getRecord(cursor, BOOKMARK_ITEM));
+                Record record = getRecord(cursor, BOOKMARK_ITEM);
+                if (record.getIconColor() == filterBy) {
+                    list.add(record);
                 }
             } else {
                 list.add(getRecord(cursor, BOOKMARK_ITEM));
@@ -323,14 +324,14 @@ public class RecordAction {
 
         if ((type == STARTSITE_ITEM) || (type == BOOKMARK_ITEM)) {
             record.setDesktopMode((record.getTime() & 16) == 16);
-            record.setNightMode(!((record.getTime() & 32) == 32));
+            record.setNightMode((record.getTime() & 32) == 32);
             if (type == BOOKMARK_ITEM) {
                 record.setIconColor(record.getTime() & 15);
             }
             record.setTime(0);  //time is no longer needed after extracting data
         } else if (type == HISTORY_ITEM) {
             record.setDesktopMode((record.getTime() & 16) == 16);
-            record.setNightMode(!((record.getTime() & 32) == 32));
+            record.setNightMode((record.getTime() & 32) == 32);
             record.setTime(record.getTime() & (~255));  //blank out lower 8bits of time
         }
         return record;

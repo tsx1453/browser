@@ -6,8 +6,6 @@ import android.app.Dialog;
 import android.app.DownloadManager;
 import android.app.SearchManager;
 import android.content.BroadcastReceiver;
-import android.content.ClipData;
-import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -21,9 +19,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Message;
-import android.print.PrintAttributes;
-import android.print.PrintDocumentAdapter;
-import android.print.PrintManager;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -33,10 +28,8 @@ import android.util.TypedValue;
 import android.view.ContextMenu;
 import android.view.Gravity;
 import android.view.KeyEvent;
-import android.view.MotionEvent;
 import android.view.OrientationEventListener;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.WindowInsets;
@@ -53,7 +46,6 @@ import android.widget.GridView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.VideoView;
@@ -61,17 +53,11 @@ import android.widget.VideoView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.cardview.widget.CardView;
 
 import com.google.android.material.badge.BadgeDrawable;
 import com.google.android.material.badge.BadgeUtils;
-import com.google.android.material.bottomsheet.BottomSheetBehavior;
-import com.google.android.material.bottomsheet.BottomSheetDialog;
-import com.google.android.material.chip.Chip;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
-import com.google.android.material.tabs.TabLayout;
-import com.google.android.material.textfield.TextInputLayout;
 import com.liuzho.browser.Browser;
 import com.liuzho.browser.R;
 import com.liuzho.browser.browser.AdBlock;
@@ -85,6 +71,9 @@ import com.liuzho.browser.browser.TrustedList;
 import com.liuzho.browser.database.FaviconHelper;
 import com.liuzho.browser.database.Record;
 import com.liuzho.browser.database.RecordAction;
+import com.liuzho.browser.dialog.FastToggleDialog;
+import com.liuzho.browser.dialog.OverflowDialog;
+import com.liuzho.browser.dialog.OverviewDialog;
 import com.liuzho.browser.storage.BrowserPref;
 import com.liuzho.browser.unit.BrowserUnit;
 import com.liuzho.browser.unit.HelperUnit;
@@ -111,7 +100,6 @@ import static android.webkit.WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE;
 import static com.liuzho.browser.database.RecordAction.BOOKMARK_ITEM;
 import static com.liuzho.browser.database.RecordAction.HISTORY_ITEM;
 import static com.liuzho.browser.database.RecordAction.STARTSITE_ITEM;
-import com.liuzho.browser.dialog.FastToggleDialog;
 
 public class BrowserActivity extends AppCompatActivity implements BrowserController {
 
@@ -124,7 +112,7 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
     // Views
 
     private EditText searchBox;
-    private BottomSheetDialog bottomSheetDialog_OverView;
+    private OverviewDialog overviewDialog;
     private AlertDialog dialog_tabPreview;
     private NinjaWebView ninjaWebView;
     private View customView;
@@ -151,9 +139,6 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
     private Activity activity;
     private Context context;
     private BrowserPref browserPref;
-    private long newIcon;
-    private boolean filter;
-    private boolean isNightMode;
     private boolean orientationChanged;
 
     private ValueCallback<Uri[]> filePathCallback = null;
@@ -212,7 +197,7 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
         activity = BrowserActivity.this;
         context = BrowserActivity.this;
         browserPref = BrowserPref.getInstance();
-
+        overviewDialog = new OverviewDialog(this);
         if (browserPref.keepScreenOn()) {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
@@ -378,7 +363,7 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
                     WebBackForwardList mWebBackForwardList = ninjaWebView.copyBackForwardList();
                     String historyUrl = mWebBackForwardList.getItemAtIndex(mWebBackForwardList.getCurrentIndex() - 1).getUrl();
                     ninjaWebView.initPreferences(historyUrl);
-                    goBack_skipRedirects();
+                    goBackSkipRedirects();
                 } else {
                     removeAlbum(currentAlbumController);
                 }
@@ -416,11 +401,11 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
             for (Record record : list) {
                 if (record.getURL().equals(url)) {
                     if ((record.getType() == BOOKMARK_ITEM) || (record.getType() == STARTSITE_ITEM) || (record.getType() == HISTORY_ITEM)) {
-                        if (record.getDesktopMode() != ninjaWebView.isDesktopMode())
+                        if (record.getDesktopMode() != ninjaWebView.isDesktopMode()) {
                             ninjaWebView.toggleDesktopMode(false);
-                        if (record.getNightMode() == ninjaWebView.isNightMode() && !isNightMode) {
+                        }
+                        if (record.getNightMode() != ninjaWebView.isNightMode()) {
                             ninjaWebView.toggleNightMode();
-                            isNightMode = ninjaWebView.isNightMode();
                         }
                         break;
                     }
@@ -430,30 +415,20 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
         });
     }
 
-//    private void showOverview() {
-//        initOverview();
-//        bottomSheetDialog_OverView.show();
-//    }
-
-    private void showBookmarkOverview() {
-        initOverview(0);
-        bottomSheetDialog_OverView.show();
+    public void showBookmarkOverview() {
+        overviewDialog.showBookmarks(ninjaWebView);
     }
 
-    private void showHistoryOverview() {
-        initOverview(1);
-        bottomSheetDialog_OverView.show();
+    public void showHistoryOverview() {
+        overviewDialog.showHistory(ninjaWebView);
     }
 
-    private void showHomePageOverview() {
-        initOverview(2);
-        bottomSheetDialog_OverView.show();
+    public void showHomePageOverview() {
+        overviewDialog.showHome(ninjaWebView);
     }
 
     public void hideOverview() {
-        if (bottomSheetDialog_OverView != null) {
-            bottomSheetDialog_OverView.cancel();
-        }
+        overviewDialog.hide();
     }
 
     public void hideTabView() {
@@ -465,14 +440,6 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
     public void showTabView() {
         HelperUnit.hideSoftKeyboard(omniBox_text, context);
         dialog_tabPreview.show();
-    }
-
-    private void printPDF() {
-        String title = HelperUnit.fileName(ninjaWebView.getUrl());
-        PrintManager printManager = (PrintManager) getSystemService(Context.PRINT_SERVICE);
-        PrintDocumentAdapter printAdapter = ninjaWebView.createPrintDocumentAdapter(title);
-        Objects.requireNonNull(printManager).print(title, printAdapter, new PrintAttributes.Builder().build());
-        browserPref.setPdfCreate(true);
     }
 
     private void dispatchIntent(Intent intent) {
@@ -567,150 +534,6 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
         omniBox_overview.setOnClickListener(v -> showTabView());
     }
 
-    @SuppressLint("ClickableViewAccessibility")
-    private void initOverview(int type) {
-        bottomSheetDialog_OverView = new BottomSheetDialog(context);
-        View dialogView = View.inflate(context, R.layout.libbrs_dialog_overview, null);
-        TextView title = dialogView.findViewById(R.id.overview_title);
-        ImageButton close = dialogView.findViewById(R.id.overview_close);
-
-        close.setOnClickListener(view -> hideOverview());
-
-        ListView listView = dialogView.findViewById(R.id.list_overView);
-        // allow scrolling in listView without closing the bottomSheetDialog
-        listView.setOnTouchListener((v, event) -> {
-            int action = event.getAction();
-            if (action == MotionEvent.ACTION_DOWN) {
-                // Disallow NestedScrollView to intercept touch events.
-                if (listView.canScrollVertically(-1)) {
-                    v.getParent().requestDisallowInterceptTouchEvent(true);
-                }
-            }
-            // Handle ListView touch events.
-            v.onTouchEvent(event);
-            return true;
-        });
-
-        bottomSheetDialog_OverView.setContentView(dialogView);
-        RecordAction action = new RecordAction(context);
-        action.open(false);
-        final List<Record> list;
-        switch (type) {
-            case 0:
-                overViewTab = getString(R.string.libbrs_album_title_bookmarks);
-                list = action.listBookmark(activity, filter, 0);
-                action.close();
-
-                adapter = new RecordAdapter(context, list) {
-                    @NonNull
-                    @Override
-                    public View getView(int position, View convertView, @NonNull ViewGroup parent) {
-                        View v = super.getView(position, convertView, parent);
-                        ImageView record_item_icon = v.findViewById(R.id.record_item_icon);
-                        record_item_icon.setVisibility(View.VISIBLE);
-                        return v;
-                    }
-                };
-
-                listView.setAdapter(adapter);
-                adapter.notifyDataSetChanged();
-                filter = false;
-                listView.setOnItemClickListener((parent, view, position, id) -> {
-                    if (list.get(position).getDesktopMode() != ninjaWebView.isDesktopMode())
-                        ninjaWebView.toggleDesktopMode(false);
-                    if (list.get(position).getNightMode() == ninjaWebView.isNightMode() && !isNightMode) {
-                        ninjaWebView.toggleNightMode();
-                        isNightMode = ninjaWebView.isNightMode();
-                    }
-                    ninjaWebView.loadUrl(list.get(position).getURL());
-                    hideOverview();
-                });
-                listView.setOnItemLongClickListener((parent, view, position, id) -> {
-                    showContextMenuList(list.get(position).getTitle(), list.get(position).getURL(), adapter, list, position);
-                    return true;
-                });
-                break;
-            case 1:
-                overViewTab = getString(R.string.libbrs_album_title_history);
-
-
-                list = action.listHistory();
-                action.close();
-
-                //noinspection NullableProblems
-                adapter = new RecordAdapter(context, list) {
-                    @Override
-                    public View getView(int position, View convertView, @NonNull ViewGroup parent) {
-                        View v = super.getView(position, convertView, parent);
-                        TextView record_item_time = v.findViewById(R.id.record_item_time);
-                        record_item_time.setVisibility(View.VISIBLE);
-                        return v;
-                    }
-                };
-
-                listView.setAdapter(adapter);
-                adapter.notifyDataSetChanged();
-                listView.setOnItemClickListener((parent, view, position, id) -> {
-                    if (list.get(position).getDesktopMode() != ninjaWebView.isDesktopMode())
-                        ninjaWebView.toggleDesktopMode(false);
-                    if (list.get(position).getNightMode() == ninjaWebView.isNightMode() && !isNightMode) {
-                        ninjaWebView.toggleNightMode();
-                        isNightMode = ninjaWebView.isNightMode();
-                    }
-                    ninjaWebView.loadUrl(list.get(position).getURL());
-                    hideOverview();
-                });
-
-                listView.setOnItemLongClickListener((parent, view, position, id) -> {
-                    showContextMenuList(list.get(position).getTitle(), list.get(position).getURL(), adapter, list, position);
-                    return true;
-                });
-                break;
-            case 2:
-                omniBox_overview.setImageResource(R.drawable.libbrs_icon_web);
-                overViewTab = getString(R.string.libbrs_album_title_home);
-
-                list = action.listStartSite();
-                action.close();
-
-                adapter = new RecordAdapter(context, list);
-                listView.setAdapter(adapter);
-                adapter.notifyDataSetChanged();
-
-                listView.setOnItemClickListener((parent, view, position, id) -> {
-                    if (list.get(position).getDesktopMode() != ninjaWebView.isDesktopMode())
-                        ninjaWebView.toggleDesktopMode(false);
-                    if (list.get(position).getNightMode() == ninjaWebView.isNightMode() && !isNightMode) {
-                        ninjaWebView.toggleNightMode();
-                        isNightMode = ninjaWebView.isNightMode();
-                    }
-                    ninjaWebView.loadUrl(list.get(position).getURL());
-                    hideOverview();
-                });
-
-                listView.setOnItemLongClickListener((parent, view, position, id) -> {
-                    showContextMenuList(list.get(position).getTitle(), list.get(position).getURL(), adapter, list, position);
-                    return true;
-                });
-                break;
-        }
-        title.setText(overViewTab);
-        BottomSheetBehavior<View> mBehavior = BottomSheetBehavior.from((View) dialogView.getParent());
-        mBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-        mBehavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
-            @Override
-            public void onStateChanged(@NonNull View bottomSheet, int newState) {
-                if (newState == BottomSheetBehavior.STATE_HIDDEN || newState == BottomSheetBehavior.STATE_COLLAPSED) {
-                    hideOverview();
-                }
-            }
-
-            @Override
-            public void onSlide(@NonNull View bottomSheet, float slideOffset) {
-            }
-        });
-    }
-
     private void initSearchPanel() {
         searchPanel = findViewById(R.id.searchBox);
         searchBox = findViewById(R.id.searchBox_input);
@@ -748,7 +571,6 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
         FastToggleDialog.show(ninjaWebView, new FastToggleDialog.ToggleCallback() {
             @Override
             public void onToggleNightMode(boolean isNight) {
-                isNightMode = isNight;
             }
         });
     }
@@ -757,10 +579,7 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
     private void setWebView(String title, final String url, final boolean foreground) {
         ninjaWebView = new NinjaWebView(context);
 
-        if (isNightMode) {
-            ninjaWebView.toggleNightMode();
-            isNightMode = ninjaWebView.isNightMode();
-        }
+        ninjaWebView.toggleNightMode();
         ninjaWebView.setBrowserController(this);
         ninjaWebView.setAlbumTitle(title, url);
 
@@ -815,7 +634,9 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
         updateOmniBox();
     }
 
-    public synchronized void addAlbum(String title, final String url, final boolean foreground, final boolean profileDialog, String profile) {
+    public synchronized void addAlbum(String title, String url,
+                                      boolean foreground,
+                                      boolean profileDialog, String profile) {
 
         //restoreProfile from shared preferences if app got killed
         if (!profile.equals("")) {
@@ -880,16 +701,17 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
     }
 
     @Override
-    public synchronized void removeAlbum(final AlbumController controller) {
+    public synchronized void removeAlbum(AlbumController controller) {
         if (BrowserContainer.size() <= 1) {
-            doubleTapsQuit();
+            finish();
         } else {
             closeTabConfirmation(() -> {
                 AlbumController predecessor;
                 if (controller == currentAlbumController) {
                     predecessor = ((NinjaWebView) controller).getPredecessor();
-                } else
+                } else {
                     predecessor = currentAlbumController;  //if not the current TAB is being closed return to current TAB
+                }
                 tab_container.removeView(controller.getAlbumView());
                 int index = BrowserContainer.indexOf(controller);
                 BrowserContainer.remove(controller);
@@ -933,7 +755,7 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
     }
 
     @Override
-    public void onConfigurationChanged(Configuration newConfig) {
+    public void onConfigurationChanged(@NonNull Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         if (!orientationChanged) {
             saveOpenedTabs();
@@ -1090,7 +912,7 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
                     addAlbum(getString(R.string.libbrs_app_name), url, true, true, "");
                     break;
                 case 3:
-                    shareLink("", url);
+                    HelperUnit.shareLink(this, "", url);
                     break;
                 case 4:
                     Intent intent = new Intent(Intent.ACTION_VIEW);
@@ -1102,24 +924,18 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
                     if (url.startsWith("data:")) {
                         DataURIParser dataURIParser = new DataURIParser(url);
                         HelperUnit.saveDataURI(dialog, activity, dataURIParser);
-                    } else HelperUnit.saveAs(dialog, activity, url);
+                    } else {
+                        HelperUnit.saveAs(dialog, activity, url);
+                    }
                     break;
                 case 6:
-                    save_atHome(title, url);
+                    saveAtHome(title, url);
                     break;
             }
         });
     }
 
-    private void shareLink(String title, String url) {
-        Intent sharingIntent = new Intent(Intent.ACTION_SEND);
-        sharingIntent.setType("text/plain");
-        sharingIntent.putExtra(Intent.EXTRA_SUBJECT, title);
-        sharingIntent.putExtra(Intent.EXTRA_TEXT, url);
-        context.startActivity(Intent.createChooser(sharingIntent, (context.getString(R.string.libbrs_menu_share_link))));
-    }
-
-    private void searchOnSite() {
+    public void searchOnSite() {
         searchOnSite = true;
         searchPanel.setVisibility(View.VISIBLE);
         HelperUnit.showSoftKeyboard(searchBox, activity);
@@ -1130,21 +946,6 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
         searchBox.setText("");
         searchPanel.setVisibility(View.GONE);
         HelperUnit.hideSoftKeyboard(searchBox, context);
-    }
-
-    private void saveBookmark() {
-        FaviconHelper faviconHelper = new FaviconHelper(context);
-        faviconHelper.addFavicon(ninjaWebView.getUrl(), ninjaWebView.getFavicon());
-        RecordAction action = new RecordAction(context);
-        action.open(true);
-        if (action.checkUrl(ninjaWebView.getUrl(), RecordUnit.TABLE_BOOKMARK)) {
-            NinjaToast.show(this, R.string.libbrs_app_error);
-        } else {
-            long value = 11;  //default red icon
-            action.addBookmark(new Record(ninjaWebView.getTitle(), ninjaWebView.getUrl(), 0, 0, 2, ninjaWebView.isDesktopMode(), ninjaWebView.isNightMode(), value));
-            NinjaToast.show(this, R.string.libbrs_app_done);
-        }
-        action.close();
     }
 
     @Override
@@ -1172,298 +973,12 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
         }
     }
 
-    private void doubleTapsQuit() {
-        finish();
-    }
-
-    @SuppressLint("ClickableViewAccessibility")
     private void showOverflow() {
-
         HelperUnit.hideSoftKeyboard(omniBox_text, context);
-
-        String url = ninjaWebView.getUrl();
-        String title = ninjaWebView.getTitle();
-
-        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
-        View dialogView = View.inflate(context, R.layout.libbrs_dialog_menu_overflow, null);
-
-        builder.setView(dialogView);
-        AlertDialog dialog_overflow = builder.create();
-        dialog_overflow.show();
-        Objects.requireNonNull(dialog_overflow.getWindow()).setGravity(Gravity.TOP);
-        FaviconHelper.setFavicon(context, dialogView, url, R.id.menu_icon, R.drawable.libbrs_icon_image_broken);
-
-        TextView overflow_title = dialogView.findViewById(R.id.overflow_title);
-        assert title != null;
-        if (title.isEmpty()) {
-            overflow_title.setText(url);
-        } else {
-            overflow_title.setText(title);
-        }
-
-
-        final GridView menu_grid_tab = dialogView.findViewById(R.id.overflow_tab);
-        final GridView menu_grid_share = dialogView.findViewById(R.id.overflow_share);
-        final GridView menu_grid_save = dialogView.findViewById(R.id.overflow_save);
-        final GridView menu_grid_other = dialogView.findViewById(R.id.overflow_other);
-        final GridView menuGridRecord = dialogView.findViewById(R.id.overflow_record);
-
-        menu_grid_tab.setVisibility(View.VISIBLE);
-        menuGridRecord.setVisibility(View.GONE);
-        menu_grid_share.setVisibility(View.GONE);
-        menu_grid_save.setVisibility(View.GONE);
-        menu_grid_other.setVisibility(View.GONE);
-
-        // Tab
-
-        GridItem item_01 = new GridItem(0, getString(R.string.libbrs_menu_openFav), 0);
-        GridItem item_02 = new GridItem(0, getString(R.string.libbrs_main_menu_new_tabOpen), 0);
-        GridItem item_03 = new GridItem(0, getString(R.string.libbrs_main_menu_new_tabProfile), 0);
-        GridItem item_04 = new GridItem(0, getString(R.string.libbrs_menu_reload), 0);
-        GridItem item_05 = new GridItem(0, getString(R.string.libbrs_menu_closeTab), 0);
-        GridItem item_06 = new GridItem(0, getString(R.string.libbrs_menu_quit), 0);
-
-        final List<GridItem> gridList_tab = new LinkedList<>();
-
-        gridList_tab.add(gridList_tab.size(), item_01);
-        gridList_tab.add(gridList_tab.size(), item_02);
-        gridList_tab.add(gridList_tab.size(), item_03);
-        gridList_tab.add(gridList_tab.size(), item_04);
-        gridList_tab.add(gridList_tab.size(), item_05);
-        gridList_tab.add(gridList_tab.size(), item_06);
-
-        GridAdapter gridAdapter_tab = new GridAdapter(context, gridList_tab);
-        menu_grid_tab.setAdapter(gridAdapter_tab);
-        gridAdapter_tab.notifyDataSetChanged();
-
-        menu_grid_tab.setOnItemClickListener((parent, view14, position, id) -> {
-            dialog_overflow.cancel();
-            if (position == 0) {
-                ninjaWebView.loadUrl(BrowserPref.getInstance().getFavoriteUrl());
-            } else if (position == 1) {
-                addAlbum(getString(R.string.libbrs_app_name), BrowserPref.getInstance().getFavoriteUrl(), true, false, "");
-            } else if (position == 2) {
-                addAlbum(getString(R.string.libbrs_app_name), BrowserPref.getInstance().getFavoriteUrl(), true, true, "");
-            } else if (position == 3) {
-                ninjaWebView.reload();
-            } else if (position == 4) {
-                removeAlbum(currentAlbumController);
-            } else if (position == 5) {
-                doubleTapsQuit();
-            }
-        });
-
-        // Bookmark
-        GridItem item_bm_1 = new GridItem(0, getString(R.string.libbrs_album_title_bookmarks), 0);
-        GridItem item_bm_2 = new GridItem(0, getString(R.string.libbrs_album_title_history), 0);
-        GridItem item_bm_3 = new GridItem(0, getString(R.string.libbrs_album_title_home), 0);
-        final List<GridItem> gridListBookMark = new LinkedList<>();
-        gridListBookMark.add(item_bm_1);
-        gridListBookMark.add(item_bm_2);
-        gridListBookMark.add(item_bm_3);
-        GridAdapter gridAdapterBookMark = new GridAdapter(context, gridListBookMark);
-        menuGridRecord.setAdapter(gridAdapterBookMark);
-        gridAdapterBookMark.notifyDataSetChanged();
-        menuGridRecord.setOnItemClickListener((adapterView, view, position, l) -> {
-            switch (position) {
-                case 0:
-                    showBookmarkOverview();
-                    break;
-                case 1:
-                    showHistoryOverview();
-                    break;
-                case 2:
-                    showHomePageOverview();
-                    break;
-                default:
-                    break;
-            }
-            dialog_overflow.cancel();
-        });
-
-        // Save
-        GridItem item_21 = new GridItem(0, getString(R.string.libbrs_menu_fav), 0);
-        GridItem item_22 = new GridItem(0, getString(R.string.libbrs_menu_save_home), 0);
-        GridItem item_23 = new GridItem(0, getString(R.string.libbrs_menu_save_bookmark), 0);
-        GridItem item_24 = new GridItem(0, getString(R.string.libbrs_menu_save_pdf), 0);
-        GridItem item_25 = new GridItem(0, getString(R.string.libbrs_menu_sc), 0);
-        GridItem item_26 = new GridItem(0, getString(R.string.libbrs_menu_save_as), 0);
-
-        final List<GridItem> gridList_save = new LinkedList<>();
-        gridList_save.add(gridList_save.size(), item_21);
-        gridList_save.add(gridList_save.size(), item_22);
-        gridList_save.add(gridList_save.size(), item_23);
-        gridList_save.add(gridList_save.size(), item_24);
-        gridList_save.add(gridList_save.size(), item_25);
-        gridList_save.add(gridList_save.size(), item_26);
-
-        GridAdapter gridAdapter_save = new GridAdapter(context, gridList_save);
-        menu_grid_save.setAdapter(gridAdapter_save);
-        gridAdapter_save.notifyDataSetChanged();
-
-        menu_grid_save.setOnItemClickListener((parent, view13, position, id) -> {
-            dialog_overflow.cancel();
-            RecordAction action = new RecordAction(context);
-            if (position == 0) {
-                BrowserPref.getInstance().setFavoriteUrl(url);
-                NinjaToast.show(this, R.string.libbrs_app_done);
-            } else if (position == 1) {
-                save_atHome(title, url);
-            } else if (position == 2) {
-                saveBookmark();
-                action.close();
-            } else if (position == 3) {
-                printPDF();
-            } else if (position == 4) {
-                HelperUnit.createShortcut(context, ninjaWebView.getTitle(), ninjaWebView.getUrl());
-            } else if (position == 5) {
-                HelperUnit.saveAs(dialog_overflow, activity, url);
-            }
-        });
-
-        // Share
-        GridItem item_11 = new GridItem(0, getString(R.string.libbrs_menu_share_link), 0);
-        GridItem item_12 = new GridItem(0, getString(R.string.libbrs_menu_shareClipboard), 0);
-        GridItem item_13 = new GridItem(0, getString(R.string.libbrs_menu_open_with), 0);
-
-        final List<GridItem> gridList_share = new LinkedList<>();
-        gridList_share.add(gridList_share.size(), item_11);
-        gridList_share.add(gridList_share.size(), item_12);
-        gridList_share.add(gridList_share.size(), item_13);
-
-        GridAdapter gridAdapter_share = new GridAdapter(context, gridList_share);
-        menu_grid_share.setAdapter(gridAdapter_share);
-        gridAdapter_share.notifyDataSetChanged();
-
-        menu_grid_share.setOnItemClickListener((parent, view12, position, id) -> {
-            dialog_overflow.cancel();
-            if (position == 0) {
-                shareLink(title, url);
-            } else if (position == 1) {
-                ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-                ClipData clip = ClipData.newPlainText("text", url);
-                Objects.requireNonNull(clipboard).setPrimaryClip(clip);
-                NinjaToast.show(this, R.string.libbrs_toast_copy_successful);
-            } else if (position == 2) {
-                Intent intent = new Intent(Intent.ACTION_VIEW);
-                intent.setData(Uri.parse(url));
-                Intent chooser = Intent.createChooser(intent, getString(R.string.libbrs_menu_open_with));
-                startActivity(chooser);
-            }
-        });
-
-        // Other
-        GridItem item_31 = new GridItem(0, getString(R.string.libbrs_menu_other_searchSite), 0);
-        GridItem item_32 = new GridItem(0, getString(R.string.libbrs_menu_download), 0);
-        GridItem item_33 = new GridItem(0, getString(R.string.libbrs_setting_label), 0);
-        GridItem item_36 = new GridItem(0, getString(R.string.libbrs_menu_restart), 0);
-        GridItem item_34;
-        if (ninjaWebView.isDesktopMode()) {
-            item_34 = new GridItem(0, getString((R.string.libbrs_menu_mobileView)), 0);
-        } else {
-            item_34 = new GridItem(0, getString((R.string.libbrs_menu_desktopView)), 0);
-        }
-
-        GridItem item_35;
-        if (ninjaWebView.isNightMode())
-            item_35 = new GridItem(0, getString((R.string.libbrs_menu_dayView)), 0);
-        else item_35 = new GridItem(0, getString((R.string.libbrs_menu_nightView)), 0);
-
-        final List<GridItem> gridList_other = new LinkedList<>();
-        gridList_other.add(gridList_other.size(), item_31);
-        gridList_other.add(gridList_other.size(), item_34);
-        gridList_other.add(gridList_other.size(), item_35);
-        gridList_other.add(gridList_other.size(), item_32);
-        gridList_other.add(gridList_other.size(), item_33);
-        gridList_other.add(gridList_other.size(), item_36);
-
-        GridAdapter gridAdapter_other = new GridAdapter(context, gridList_other);
-        menu_grid_other.setAdapter(gridAdapter_other);
-        gridAdapter_other.notifyDataSetChanged();
-
-        menu_grid_other.setOnItemClickListener((parent, view1, position, id) -> {
-            dialog_overflow.cancel();
-            if (position == 0) {
-                searchOnSite();
-            } else if (position == 1) {
-                ninjaWebView.toggleDesktopMode(true);
-            } else if (position == 2) {
-                ninjaWebView.toggleNightMode();
-                isNightMode = ninjaWebView.isNightMode();
-            } else if (position == 3) {
-                startActivity(new Intent(DownloadManager.ACTION_VIEW_DOWNLOADS));
-            } else if (position == 4) {
-                Intent settings = new Intent(BrowserActivity.this, SettingsActivity.class);
-                startActivity(settings);
-            } else if (position == 5) {
-                saveOpenedTabs();
-                HelperUnit.triggerRebirth(this);
-            }
-        });
-
-        TabLayout tabLayout = dialogView.findViewById(R.id.tabLayout);
-
-        TabLayout.Tab tab_tab = tabLayout.newTab().setIcon(R.drawable.libbrs_icon_tab);
-        TabLayout.Tab tab_share = tabLayout.newTab().setIcon(R.drawable.libbrs_icon_menu_share);
-        TabLayout.Tab tab_save = tabLayout.newTab().setIcon(R.drawable.libbrs_icon_menu_save);
-        TabLayout.Tab tab_other = tabLayout.newTab().setIcon(R.drawable.libbrs_icon_dots);
-        TabLayout.Tab tabRecord = tabLayout.newTab().setIcon(R.drawable.libbrs_icon_web);
-
-        tabLayout.addTab(tab_tab);
-        tabLayout.addTab(tabRecord);
-        tabLayout.addTab(tab_share);
-        tabLayout.addTab(tab_save);
-        tabLayout.addTab(tab_other);
-
-        tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
-        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
-            private final View[] tabs = new View[]{menu_grid_tab, menuGridRecord, menu_grid_share, menu_grid_save, menu_grid_other};
-
-            @Override
-            public void onTabSelected(TabLayout.Tab tab) {
-                for (int i = 0; i < tabs.length; i++) {
-                    if (tab.getPosition() == i) {
-                        tabs[i].setVisibility(View.VISIBLE);
-                    } else {
-                        tabs[i].setVisibility(View.GONE);
-                    }
-                }
-//                if (tab.getPosition() == 0) {
-//                    menu_grid_tab.setVisibility(View.VISIBLE);
-//                    menu_grid_share.setVisibility(View.GONE);
-//                    menu_grid_save.setVisibility(View.GONE);
-//                    menu_grid_other.setVisibility(View.GONE);
-//                } else if (tab.getPosition() == 1) {
-//                    menu_grid_tab.setVisibility(View.GONE);
-//                    menu_grid_share.setVisibility(View.VISIBLE);
-//                    menu_grid_save.setVisibility(View.GONE);
-//                    menu_grid_other.setVisibility(View.GONE);
-//                } else if (tab.getPosition() == 2) {
-//                    menu_grid_tab.setVisibility(View.GONE);
-//                    menu_grid_share.setVisibility(View.GONE);
-//                    menu_grid_save.setVisibility(View.VISIBLE);
-//                    menu_grid_other.setVisibility(View.GONE);
-//                } else if (tab.getPosition() == 3) {
-//                    menu_grid_tab.setVisibility(View.GONE);
-//                    menu_grid_share.setVisibility(View.GONE);
-//                    menu_grid_save.setVisibility(View.GONE);
-//                    menu_grid_other.setVisibility(View.VISIBLE);
-//                } else if (tab.getPosition() == 4) {
-//
-//                }
-            }
-
-            @Override
-            public void onTabUnselected(TabLayout.Tab tab) {
-            }
-
-            @Override
-            public void onTabReselected(TabLayout.Tab tab) {
-            }
-        });
+        new OverflowDialog(this, ninjaWebView).show();
     }
 
-    private void saveOpenedTabs() {
+    public void saveOpenedTabs() {
         ArrayList<String> openTabs = new ArrayList<>();
         for (int i = 0; i < BrowserContainer.size(); i++) {
             if (currentAlbumController == BrowserContainer.get(i)) {
@@ -1486,178 +1001,7 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
         browserPref.setOpenTabsProfile(openTabsProfile);
     }
 
-    private void showContextMenuList(final String title, final String url,
-                                     final RecordAdapter adapterRecord, final List<Record> recordList, final int location) {
-
-        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
-        View dialogView = View.inflate(context, R.layout.libbrs_dialog_menu, null);
-
-        TextView menuTitle = dialogView.findViewById(R.id.menuTitle);
-        menuTitle.setText(title);
-        FaviconHelper.setFavicon(context, dialogView, url, R.id.menu_icon, R.drawable.libbrs_icon_image_broken);
-
-        builder.setView(dialogView);
-        AlertDialog dialog = builder.create();
-        dialog.show();
-        Objects.requireNonNull(dialog.getWindow()).setGravity(Gravity.BOTTOM);
-
-        GridItem item_01 = new GridItem(0, getString(R.string.libbrs_main_menu_new_tabOpen), 0);
-        GridItem item_02 = new GridItem(0, getString(R.string.libbrs_main_menu_new_tab), 0);
-        GridItem item_03 = new GridItem(0, getString(R.string.libbrs_main_menu_new_tabProfile), 0);
-        GridItem item_04 = new GridItem(0, getString(R.string.libbrs_menu_share_link), 0);
-        GridItem item_05 = new GridItem(0, getString(R.string.libbrs_menu_delete), 0);
-        GridItem item_06 = new GridItem(0, getString(R.string.libbrs_menu_edit), 0);
-
-        final List<GridItem> gridList = new LinkedList<>();
-
-        if (overViewTab.equals(getString(R.string.libbrs_album_title_bookmarks)) || overViewTab.equals(getString(R.string.libbrs_album_title_home))) {
-            gridList.add(gridList.size(), item_01);
-            gridList.add(gridList.size(), item_02);
-            gridList.add(gridList.size(), item_03);
-            gridList.add(gridList.size(), item_04);
-            gridList.add(gridList.size(), item_05);
-            gridList.add(gridList.size(), item_06);
-        } else {
-            gridList.add(gridList.size(), item_01);
-            gridList.add(gridList.size(), item_02);
-            gridList.add(gridList.size(), item_03);
-            gridList.add(gridList.size(), item_04);
-            gridList.add(gridList.size(), item_05);
-        }
-
-        GridView menu_grid = dialogView.findViewById(R.id.menu_grid);
-        GridAdapter gridAdapter = new GridAdapter(context, gridList);
-        menu_grid.setAdapter(gridAdapter);
-        gridAdapter.notifyDataSetChanged();
-        menu_grid.setOnItemClickListener((parent, view, position, id) -> {
-            dialog.cancel();
-            MaterialAlertDialogBuilder builderSubMenu;
-            AlertDialog dialogSubMenu;
-            switch (position) {
-                case 0:
-                    addAlbum(getString(R.string.libbrs_app_name), url, true, false, "");
-                    hideOverview();
-                    break;
-                case 1:
-                    addAlbum(getString(R.string.libbrs_app_name), url, false, false, "");
-                    break;
-                case 2:
-                    addAlbum(getString(R.string.libbrs_app_name), url, true, true, "");
-                    hideOverview();
-                    break;
-                case 3:
-                    shareLink("", url);
-                    break;
-                case 4:
-                    builderSubMenu = new MaterialAlertDialogBuilder(context);
-                    builderSubMenu.setIcon(R.drawable.libbrs_icon_alert);
-                    builderSubMenu.setTitle(R.string.libbrs_menu_delete);
-                    builderSubMenu.setMessage(R.string.libbrs_hint_database);
-                    builderSubMenu.setPositiveButton(android.R.string.ok, (dialog2, whichButton) -> {
-                        Record record = recordList.get(location);
-                        RecordAction action = new RecordAction(context);
-                        action.open(true);
-                        if (overViewTab.equals(getString(R.string.libbrs_album_title_home))) {
-                            action.deleteURL(record.getURL(), RecordUnit.TABLE_START);
-                        } else if (overViewTab.equals(getString(R.string.libbrs_album_title_bookmarks))) {
-                            action.deleteURL(record.getURL(), RecordUnit.TABLE_BOOKMARK);
-                        } else if (overViewTab.equals(getString(R.string.libbrs_album_title_history))) {
-                            action.deleteURL(record.getURL(), RecordUnit.TABLE_HISTORY);
-                        }
-                        action.close();
-                        recordList.remove(location);
-                        adapterRecord.notifyDataSetChanged();
-                    });
-                    builderSubMenu.setNegativeButton(android.R.string.cancel, (dialog2, whichButton) -> builderSubMenu.setCancelable(true));
-                    dialogSubMenu = builderSubMenu.create();
-                    dialogSubMenu.show();
-                    HelperUnit.setupDialog(context, dialogSubMenu);
-                    break;
-                case 5:
-                    builderSubMenu = new MaterialAlertDialogBuilder(context);
-                    View dialogViewSubMenu = View.inflate(context, R.layout.libbrs_dialog_edit_title, null);
-
-                    TextInputLayout edit_title_layout = dialogViewSubMenu.findViewById(R.id.edit_title_layout);
-                    TextInputLayout edit_userName_layout = dialogViewSubMenu.findViewById(R.id.edit_userName_layout);
-                    TextInputLayout edit_PW_layout = dialogViewSubMenu.findViewById(R.id.edit_PW_layout);
-                    edit_title_layout.setVisibility(View.VISIBLE);
-                    edit_userName_layout.setVisibility(View.GONE);
-                    edit_PW_layout.setVisibility(View.GONE);
-
-                    EditText edit_title = dialogViewSubMenu.findViewById(R.id.edit_title);
-                    edit_title.setText(title);
-
-                    TextInputLayout edit_URL_layout = dialogViewSubMenu.findViewById(R.id.edit_URL_layout);
-                    edit_URL_layout.setVisibility(View.VISIBLE);
-                    EditText edit_URL = dialogViewSubMenu.findViewById(R.id.edit_URL);
-                    edit_URL.setVisibility(View.VISIBLE);
-                    edit_URL.setText(url);
-
-                    Chip chip_desktopMode = dialogViewSubMenu.findViewById(R.id.edit_bookmark_desktopMode);
-                    chip_desktopMode.setChecked(recordList.get(location).getDesktopMode());
-                    Chip chip_nightMode = dialogViewSubMenu.findViewById(R.id.edit_bookmark_nightMode);
-                    chip_nightMode.setChecked(!recordList.get(location).getNightMode());
-
-                    ImageView ib_icon = dialogViewSubMenu.findViewById(R.id.edit_icon);
-                    if (!overViewTab.equals(getString(R.string.libbrs_album_title_bookmarks))) {
-                        ib_icon.setVisibility(View.GONE);
-                    }
-                    ib_icon.setOnClickListener(v -> {
-                        MaterialAlertDialogBuilder builderFilter = new MaterialAlertDialogBuilder(context);
-                        View dialogViewFilter = View.inflate(context, R.layout.libbrs_dialog_menu, null);
-                        builderFilter.setView(dialogViewFilter);
-                        AlertDialog dialogFilter = builderFilter.create();
-                        dialogFilter.show();
-                        TextView menuTitleFilter = dialogViewFilter.findViewById(R.id.menuTitle);
-                        menuTitleFilter.setText(R.string.libbrs_menu_filter);
-                        CardView cardView = dialogViewFilter.findViewById(R.id.cardView);
-                        cardView.setVisibility(View.GONE);
-                        Objects.requireNonNull(dialogFilter.getWindow()).setGravity(Gravity.BOTTOM);
-                        GridView menu_grid2 = dialogViewFilter.findViewById(R.id.menu_grid);
-                        final List<GridItem> gridList2 = new LinkedList<>();
-                        HelperUnit.addFilterItems(activity, gridList2);
-                        GridAdapter gridAdapter2 = new GridAdapter(context, gridList2);
-                        menu_grid2.setAdapter(gridAdapter2);
-                        gridAdapter2.notifyDataSetChanged();
-                        menu_grid2.setOnItemClickListener((parent2, view2, position2, id2) -> {
-                            newIcon = gridList2.get(position2).getData();
-                            HelperUnit.setFilterIcons(ib_icon, newIcon);
-                            dialogFilter.cancel();
-                        });
-                    });
-                    newIcon = recordList.get(location).getIconColor();
-                    HelperUnit.setFilterIcons(ib_icon, newIcon);
-
-                    builderSubMenu.setView(dialogViewSubMenu);
-                    builderSubMenu.setTitle(getString(R.string.libbrs_menu_edit));
-                    builderSubMenu.setIcon(R.drawable.libbrs_icon_alert);
-                    builderSubMenu.setMessage(url);
-                    builderSubMenu.setPositiveButton(android.R.string.ok, (dialog3, whichButton) -> {
-                        if (overViewTab.equals(getString(R.string.libbrs_album_title_bookmarks))) {
-                            RecordAction action = new RecordAction(context);
-                            action.open(true);
-                            action.deleteURL(url, RecordUnit.TABLE_BOOKMARK);
-                            action.addBookmark(new Record(edit_title.getText().toString(), edit_URL.getText().toString(), 0, 0, BOOKMARK_ITEM, chip_desktopMode.isChecked(), chip_nightMode.isChecked(), newIcon));
-                            action.close();
-                        } else {
-                            RecordAction action = new RecordAction(context);
-                            action.open(true);
-                            action.deleteURL(url, RecordUnit.TABLE_START);
-                            int counter = browserPref.getAndIncreaseCounter();
-                            action.addStartSite(new Record(edit_title.getText().toString(), edit_URL.getText().toString(), 0, counter, STARTSITE_ITEM, chip_desktopMode.isChecked(), chip_nightMode.isChecked(), 0));
-                            action.close();
-                        }
-                    });
-                    builderSubMenu.setNegativeButton(android.R.string.cancel, (dialog3, whichButton) -> builderSubMenu.setCancelable(true));
-                    dialogSubMenu = builderSubMenu.create();
-                    dialogSubMenu.show();
-                    HelperUnit.setupDialog(context, dialogSubMenu);
-                    break;
-            }
-        });
-    }
-
-    private void save_atHome(final String title, final String url) {
+    public void saveAtHome(String title, String url) {
 
         FaviconHelper faviconHelper = new FaviconHelper(context);
         faviconHelper.addFavicon(ninjaWebView.getUrl(), ninjaWebView.getFavicon());
@@ -1707,6 +1051,10 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
         }
     }
 
+    public AlbumController getCurrentAlbumController() {
+        return currentAlbumController;
+    }
+
     private AlbumController nextAlbumController(boolean next) {
         if (BrowserContainer.size() <= 1) {
             return currentAlbumController;
@@ -1727,7 +1075,7 @@ public class BrowserActivity extends AppCompatActivity implements BrowserControl
         return list.get(index);
     }
 
-    public void goBack_skipRedirects() {
+    public void goBackSkipRedirects() {
         if (ninjaWebView.canGoBack()) {
             ninjaWebView.setIsBackPressed(true);
             ninjaWebView.goBack();

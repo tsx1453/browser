@@ -13,7 +13,7 @@ public class Record {
     public Boolean getDesktopMode() {return isDesktopMode; }
     public void setDesktopMode(Boolean desktopMode) {isDesktopMode = desktopMode; }
     public Boolean getNightMode() {return isNightMode; }
-    public void setNightMode(Boolean desktopMode) {isNightMode = desktopMode; }
+    public void setNightMode(Boolean nightMode) {isNightMode = nightMode; }
 
     public String getTitle() {
         return title;
